@@ -1,0 +1,101 @@
+{% extends "common/base.html" %}
+
+{% block title %}Sign in | Uber{% endblock %}
+
+{% block content %}
+<section class="auth-screen">
+    <div class="auth-login-layout">
+        <aside class="auth-showcase">
+            <div>
+                <span class="uber-pill">ONE ACCOUNT · EVERYTHING</span>
+                <h1>Move freely.</h1>
+                <p>Seamless journeys, quick eats, and courier deliveries unified under your single Uber profile.</p>
+            </div>
+            <div class="auth-ride-preview">
+                <div class="auth-ride-preview-top">
+                    <strong>Uber Black</strong>
+                    <span class="uber-pill">2 min away</span>
+                </div>
+                <div class="auth-ride-preview-bottom">
+                    <span aria-hidden="true">&#10148;</span>
+                    <div><strong>Financial District</strong><br><span class="uber-help">Optimal route dispatched</span></div>
+                </div>
+            </div>
+            <div class="auth-inline-between"><span>4.9 · Global Driver Network</span><span class="uber-status">Verified</span></div>
+        </aside>
+
+        <section class="auth-auth-card" aria-labelledby="login-title">
+            <span class="auth-eyebrow">Sign in</span>
+            <h1 class="auth-heading" id="login-title">What's your phone number or email?</h1>
+            <p class="auth-copy">Sign in to access your rides, orders, and earnings.</p>
+
+            <form class="auth-form" method="post" action="{% url 'login' %}" id="login-form">
+                {% csrf_token %}
+                <div class="auth-tabs" role="tablist" aria-label="Sign-in method">
+                    <button class="auth-tab" type="button" role="tab" aria-selected="true" data-login-mode="phone">Phone Number</button>
+                    <button class="auth-tab" type="button" role="tab" aria-selected="false" data-login-mode="email">Email Address</button>
+                </div>
+                <div class="auth-form-field">
+                    <label class="uber-label" for="{{ form.username.id_for_label }}" id="identifier-label">Mobile Number</label>
+                    <div class="auth-identifier-control" id="identifier-control">
+                        <span class="auth-country-prefix">US +1 &#8964;</span>
+                        {{ form.username }}
+                    </div>
+                    {% for error in form.username.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
+                </div>
+                <div class="auth-form-field" id="password-step" hidden>
+                    <label class="uber-label" for="{{ form.password.id_for_label }}">Password</label>
+                    {{ form.password }}
+                    {% for error in form.password.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
+                </div>
+                {% if error_message %}<p class="uber-help" role="alert">{{ error_message }}</p>{% endif %}
+                <button class="uber-button auth-submit" id="login-continue" type="button">Continue <span aria-hidden="true">&#8594;</span></button>
+            </form>
+
+            <p class="auth-disclaimer">By continuing, you agree to receive SMS notifications. Message and data rates may apply.</p>
+            <div class="auth-or">or</div>
+            <div class="auth-social-grid">
+                <button class="uber-button uber-button--secondary" type="button">Continue with Google</button>
+                <button class="uber-button uber-button--secondary" type="button">Continue with Apple</button>
+            </div>
+            <button class="uber-button uber-button--secondary auth-submit auth-login-qr" type="button">Log in with QR Code</button>
+            <div class="auth-account-switch"><span>New to Uber?</span><a href="{% url 'register' %}">Create an account &#8250;</a></div>
+        </section>
+    </div>
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    const loginTabs = document.querySelectorAll('[data-login-mode]');
+    const identifier = document.getElementById('{{ form.username.id_for_label }}');
+    const identifierControl = document.getElementById('identifier-control');
+    const identifierLabel = document.getElementById('identifier-label');
+    const passwordStep = document.getElementById('password-step');
+    const continueButton = document.getElementById('login-continue');
+    identifier.placeholder = '(555) 000-0000';
+
+    loginTabs.forEach((tab) => tab.addEventListener('click', () => {
+        loginTabs.forEach((item) => item.setAttribute('aria-selected', String(item === tab)));
+        const isEmail = tab.dataset.loginMode === 'email';
+        identifierControl.classList.toggle('is-email', isEmail);
+        identifier.type = isEmail ? 'email' : 'tel';
+        identifier.placeholder = isEmail ? 'name@example.com' : '(555) 000-0000';
+        identifierLabel.textContent = isEmail ? 'Email Address' : 'Mobile Number';
+    }));
+
+    continueButton.addEventListener('click', () => {
+        if (!identifier.value.trim()) {
+            identifier.focus();
+            return;
+        }
+        if (passwordStep.hidden) {
+            passwordStep.hidden = false;
+            continueButton.innerHTML = 'Sign in <span aria-hidden="true">&#8594;</span>';
+            document.getElementById('{{ form.password.id_for_label }}').focus();
+        } else {
+            document.getElementById('login-form').requestSubmit();
+        }
+    });
+</script>
+{% endblock %}
