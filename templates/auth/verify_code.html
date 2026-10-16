@@ -1,0 +1,85 @@
+{% extends "common/base.html" %}
+
+{% block title %}Verify your account | Uber{% endblock %}
+{% block site_header %}{% endblock %}
+{% block site_footer %}{% endblock %}
+
+{% block content %}
+<section class="auth-screen">
+    <div class="auth-verify-wrap">
+        <a href="{% url 'login' %}">&#8592; Back to sign in</a>
+        <section class="uber-card auth-verify-card" aria-labelledby="verify-title">
+            <div class="auth-card-topline">
+                <span class="uber-pill">2FA SECURED</span>
+                <span class="uber-status" aria-label="Secure session">●</span>
+            </div>
+            <h1 class="auth-heading auth-heading--verify" id="verify-title">Enter the 6-digit code</h1>
+            <p class="auth-copy">We sent a verification code to <strong>{{ phone_number|default:"+1 (555) 234-5678" }}</strong>. <a href="{% url 'login' %}">Edit number</a></p>
+
+            <form id="verification-form" class="auth-form" method="post">
+                {% csrf_token %}
+                <div class="auth-otp-grid" id="otp-inputs" aria-label="Six-digit verification code">
+                    {% for digit in "123456" %}
+                        <input aria-label="Digit {{ forloop.counter }}" autocomplete="{% if forloop.first %}one-time-code{% else %}off{% endif %}" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="text">
+                    {% endfor %}
+                </div>
+                <div class="auth-inline-between"><span class="uber-help">Security code is valid for 10 minutes</span><span class="uber-status">Auto-detect active</span></div>
+                <input type="hidden" name="code" id="verification-code">
+                <button class="uber-button auth-submit" type="submit">Verify &amp; Continue <span aria-hidden="true">&#8594;</span></button>
+            </form>
+
+            <div class="auth-resend-panel">
+                <div class="auth-inline-between"><span class="uber-help">Resend code via SMS in <strong class="uber-tabular" id="resend-countdown">0:40</strong></span><button class="auth-tab" id="resend-button" type="button" disabled>Resend now</button></div>
+                <div class="auth-social-grid auth-verify-actions">
+                    <button class="uber-button uber-button--secondary" type="button">Send via WhatsApp</button>
+                    <button class="uber-button uber-button--secondary" type="button">Call me instead</button>
+                </div>
+            </div>
+        </section>
+        <p class="auth-security-note"><strong>Security notice:</strong> Never share your verification code with anyone, including Uber employees. Our support team will never ask for this code.</p>
+        <div class="auth-metadata"><span>● Encrypted TLS 1.3</span><span>Device ID: 8F2A-941C</span><a href="#help">Help Center</a></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    const otpFields = [...document.querySelectorAll('#otp-inputs input')];
+    const codeField = document.getElementById('verification-code');
+    const resendButton = document.getElementById('resend-button');
+    const countdown = document.getElementById('resend-countdown');
+    let secondsLeft = 40;
+
+    const updateCode = () => { codeField.value = otpFields.map((field) => field.value).join(''); };
+
+    otpFields.forEach((field, index) => {
+        field.addEventListener('input', () => {
+            field.value = field.value.replace(/\D/g, '').slice(-1);
+            updateCode();
+            if (field.value && index < otpFields.length - 1) otpFields[index + 1].focus();
+        });
+        field.addEventListener('keydown', (event) => {
+            if (event.key === 'Backspace' && !field.value && index > 0) otpFields[index - 1].focus();
+            if (event.key === 'ArrowLeft' && index > 0) otpFields[index - 1].focus();
+            if (event.key === 'ArrowRight' && index < otpFields.length - 1) otpFields[index + 1].focus();
+        });
+        field.addEventListener('paste', (event) => {
+            event.preventDefault();
+            const pasted = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+            pasted.split('').forEach((digit, digitIndex) => { otpFields[digitIndex].value = digit; });
+            updateCode();
+            otpFields[Math.min(pasted.length, otpFields.length - 1)].focus();
+        });
+    });
+
+    const resendTimer = window.setInterval(() => {
+        secondsLeft -= 1;
+        countdown.textContent = `0:${String(Math.max(secondsLeft, 0)).padStart(2, '0')}`;
+        if (secondsLeft <= 0) {
+            window.clearInterval(resendTimer);
+            resendButton.disabled = false;
+            resendButton.textContent = 'Resend code';
+        }
+    }, 1000);
+</script>
+{% endblock %}

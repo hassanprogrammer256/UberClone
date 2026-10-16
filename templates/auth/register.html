@@ -1,0 +1,86 @@
+{% extends "common/base.html" %}
+
+{% block title %}Create account | Uber{% endblock %}
+
+{% block content %}
+<section class="auth-screen">
+    <div class="auth-register-wrap">
+        <div class="auth-inline-between">
+            <a href="{% url 'login' %}">&#8592; Step 1: Phone verification</a>
+            <span class="uber-pill">STEP 2 OF 3</span>
+        </div>
+        <div class="auth-progress" aria-label="Step 2 of 3"><span></span></div>
+        <section class="uber-card auth-register-card" aria-labelledby="register-title">
+            <span class="auth-eyebrow">Rider profile</span>
+            <h1 class="auth-heading auth-register-title" id="register-title">Complete your Uber account</h1>
+            <p class="auth-copy">Let's get you set up so you can start riding and requesting trips across 10,000+ cities worldwide.</p>
+
+            <form class="auth-form" method="post" action="{% url 'register' %}" id="register-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div role="alert">{{ form.non_field_errors }}</div>{% endif %}
+                <input type="hidden" name="username" id="id_username" value="{{ form.username.value|default:'' }}">
+                <div class="auth-form-grid">
+                    <div class="auth-form-field">
+                        <label class="uber-label" for="{{ form.first_name.id_for_label }}">Legal First Name</label>
+                        {{ form.first_name }}
+                        {% for error in form.first_name.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
+                    </div>
+                    <div class="auth-form-field">
+                        <label class="uber-label" for="{{ form.last_name.id_for_label }}">Legal Last Name</label>
+                        {{ form.last_name }}
+                        {% for error in form.last_name.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
+                    </div>
+                </div>
+                <div class="auth-form-field">
+                    <div class="auth-field-heading"><label class="uber-label" for="{{ form.email.id_for_label }}">Email Address</label><span class="uber-status">Verified &amp; linked</span></div>
+                    {{ form.email }}
+                    {% for error in form.email.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
+                    <span class="uber-help">Digital receipts and trip safety PIN codes will be dispatched here.</span>
+                </div>
+                <div class="auth-form-field">
+                    <div class="auth-field-heading"><label class="uber-label" for="id_password">Create Password</label><span class="uber-status" id="password-strength">Use 8+ characters</span></div>
+                    <input class="uber-field" id="id_password" name="password" type="password" autocomplete="new-password" required>
+                    {% for error in form.password.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
+                    <span class="uber-help">Must include at least 8 characters, a symbol, and a number.</span>
+                </div>
+                <div class="auth-form-field">
+                    <label class="uber-label" for="city-selector">Primary Riding City / Territory</label>
+                    <select class="uber-field" id="city-selector" name="city">
+                        <option value="sfo">San Francisco, CA (United States)</option>
+                        <option value="nyc">New York City, NY (United States)</option>
+                        <option value="lon">London, Greater London (United Kingdom)</option>
+                        <option value="tok">Tokyo (Japan)</option>
+                        <option value="par">Paris (France)</option>
+                        <option value="syd">Sydney, NSW (Australia)</option>
+                    </select>
+                    <span class="uber-help">Calibrates regional driver rates, airport pickup perks, and currency formats.</span>
+                </div>
+                <div class="auth-consents">
+                    <label class="auth-consent"><input type="checkbox" name="terms" required><span>I agree to the <a href="#terms">Uber Terms of Use</a> and acknowledge the <a href="#privacy">Privacy Notice</a>.</span></label>
+                    <label class="auth-consent"><input type="checkbox" name="marketing"><span>Receive trip discounts, seasonal fare cuts, safety alerts, and promotions via email and WhatsApp.</span></label>
+                </div>
+                <button class="uber-button auth-submit" type="submit">Create Account &amp; Continue <span aria-hidden="true">&#8594;</span></button>
+                <div class="auth-account-switch"><span>Already have an account?</span><a href="{% url 'login' %}">Sign in</a></div>
+            </form>
+        </section>
+        <div class="auth-trust-row"><span>✓ TLS 1.3 transport</span><span>✓ Zero spam guarantee</span><span>✓ 24/7 rider ops</span></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    const registrationEmail = document.getElementById('{{ form.email.id_for_label }}');
+    const registrationUsername = document.getElementById('id_username');
+    const registrationPassword = document.getElementById('id_password');
+    const strengthLabel = document.getElementById('password-strength');
+
+    registrationEmail.addEventListener('input', () => {
+        if (!registrationUsername.value) registrationUsername.value = registrationEmail.value;
+    });
+    registrationPassword.addEventListener('input', () => {
+        const password = registrationPassword.value;
+        strengthLabel.textContent = password.length >= 10 ? 'Strong' : password.length >= 6 ? 'Good' : password.length ? 'Weak' : 'Use 8+ characters';
+    });
+</script>
+{% endblock %}
