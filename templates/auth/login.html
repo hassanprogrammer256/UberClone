@@ -11,7 +11,7 @@
                 <h1>Move freely.</h1>
                 <p>Seamless journeys, quick eats, and courier deliveries unified under your single Uber profile.</p>
             </div>
-            <div class="auth-ride-preview">
+            {% comment %} <div class="auth-ride-preview">
                 <div class="auth-ride-preview-top">
                     <strong>Uber Black</strong>
                     <span class="uber-pill">2 min away</span>
@@ -21,7 +21,7 @@
                     <div><strong>Financial District</strong><br><span class="uber-help">Optimal route dispatched</span></div>
                 </div>
             </div>
-            <div class="auth-inline-between"><span>4.9 · Global Driver Network</span><span class="uber-status">Verified</span></div>
+            <div class="auth-inline-between"><span>4.9 · Global Driver Network</span><span class="uber-status">Verified</span></div> {% endcomment %}
         </aside>
 
         <section class="auth-auth-card" aria-labelledby="login-title">
@@ -38,7 +38,7 @@
                 <div class="auth-form-field">
                     <label class="uber-label" for="{{ form.username.id_for_label }}" id="identifier-label">Mobile Number</label>
                     <div class="auth-identifier-control" id="identifier-control">
-                        <span class="auth-country-prefix">US +1 &#8964;</span>
+                        <span class="auth-country-prefix">UG +256</span>
                         {{ form.username }}
                     </div>
                     {% for error in form.username.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
@@ -53,12 +53,7 @@
             </form>
 
             <p class="auth-disclaimer">By continuing, you agree to receive SMS notifications. Message and data rates may apply.</p>
-            <div class="auth-or">or</div>
-            <div class="auth-social-grid">
-                <button class="uber-button uber-button--secondary" type="button">Continue with Google</button>
-                <button class="uber-button uber-button--secondary" type="button">Continue with Apple</button>
-            </div>
-            <button class="uber-button uber-button--secondary auth-submit auth-login-qr" type="button">Log in with QR Code</button>
+
             <div class="auth-account-switch"><span>New to Uber?</span><a href="{% url 'register' %}">Create an account &#8250;</a></div>
         </section>
     </div>
