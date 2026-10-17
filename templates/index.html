@@ -1,10 +1,95 @@
 {% extends "common/base.html" %}
+{% load static %}
 
-{% block title %}HOME{% endblock %}
+{% block title %}Easy Rides Uganda | Go anywhere, effortlessly{% endblock %}
+
 
 {% block content %}
-    <div class="container">
-        <h2>Welcome to the Home Page</h2>
-        <p>This is the home page of the application.</p>
+    {% include "common/hero.html" %}
+{% endblock %}
+
+{% block site_footer %}
+<footer class="home-footer">
+    <div class="home-container home-footer-grid">
+        <div class="home-footer-brand">
+            <a class="home-brand" href="{% url 'index' %}">
+                <img src="{% static 'images/logo.png' %}" alt="">
+                <span>Easy Rides Uganda</span>
+            </a>
+            <p>Smart, high-precision on-demand urban mobility, car rides, and express intercity airport transit tailored for Kampala, Entebbe, Jinja, and beyond.</p>
+            <a class="home-helpline" href="tel:+256800100200">&#9742; &nbsp;24/7 Safety Helpline: <strong>+256 800 100 200</strong></a>
+        </div>
+        <div class="home-footer-column"><strong>Ride Categories</strong><a href="#fleet">EasyGo Sedan</a><a href="#fleet">EasyGo Saver</a><a href="#fleet">Comfort AC</a><a href="#fleet">Easy XL (6-Seater)</a><a href="#fleet">Executive Black</a></div>
+        <div class="home-footer-column"><strong>Partners &amp; Drivers</strong><a href="{% url 'register' %}">Driver Sign-Up</a><a href="#driver-opportunity">Driver Partner Program</a><a href="#driver-opportunity">Fleet Management</a><a href="#driver-opportunity">Fuel Card Rewards</a><a href="#driver-opportunity">Partner Web Portal</a></div>
+        <div class="home-footer-column"><strong>Company &amp; Trust</strong><a href="#safety">About Us</a><a href="#safety">Safety Guidelines</a><a href="#business">Easy Rides for Business</a><a href="#business">Careers in Uganda</a><a href="#routes">Newsroom</a></div>
+        <div class="home-footer-column home-footer-app"><strong>Get the Mobile App</strong><a class="home-store-button" href="#app-download"><span aria-hidden="true">&#63743;</span><span><small>DOWNLOAD ON</small>Apple App Store</span></a><a class="home-store-button" href="#app-download"><span aria-hidden="true">&#9655;</span><span><small>GET IT ON</small>Google Play</span></a></div>
     </div>
+    <div class="home-container home-footer-bottom">
+        <div class="home-social-links" aria-label="Social links"><a href="#social" aria-label="Website">&#9673;</a><a href="#social" aria-label="Community">&#9993;</a><a href="#social" aria-label="Share">&#8599;</a></div>
+        <nav class="home-legal-links" aria-label="Legal"><a href="#privacy">Privacy Policy</a><a href="#terms">Terms of Service</a><a href="#rights">Passenger Rights</a><a href="#taxes">Regulatory &amp; Taxes</a></nav>
+        <span>© 2025 Easy Rides Technologies Uganda Ltd. All rights reserved.</span>
+    </div>
+</footer>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    const rideModes = document.querySelectorAll('[data-ride-mode]');
+    const rideModeInput = document.getElementById('ride-mode');
+    const quoteMessage = document.getElementById('quote-message');
+    const vehicleName = document.getElementById('selected-vehicle-name');
+    const vehiclePrice = document.getElementById('selected-vehicle-price');
+    const vehicleEta = document.getElementById('selected-vehicle-eta');
+
+    rideModes.forEach((mode) => mode.addEventListener('click', () => {
+        rideModes.forEach((item) => {
+            item.classList.toggle('is-active', item === mode);
+            item.setAttribute('aria-selected', String(item === mode));
+        });
+        rideModeInput.value = mode.dataset.rideMode;
+    }));
+
+    document.querySelectorAll('[data-vehicle]').forEach((vehicle) => vehicle.addEventListener('click', () => {
+        const vehicleId = vehicle.dataset.vehicle;
+        document.querySelectorAll('.ride-category-list [data-vehicle]').forEach((item) => {
+            item.classList.toggle('is-active', item.dataset.vehicle === vehicleId);
+        });
+        document.querySelectorAll('[data-fleet-card]').forEach((card) => {
+            card.classList.toggle('is-selected', card.dataset.fleetCard === vehicleId);
+        });
+        vehicleName.textContent = vehicle.dataset.vehicleName;
+        vehiclePrice.textContent = vehicle.dataset.vehiclePrice;
+        vehicleEta.textContent = vehicle.dataset.vehicleEta;
+        document.getElementById('selected-vehicle-description').textContent = vehicle.dataset.vehicleDescription;
+        document.getElementById('selected-vehicle-seats').textContent = vehicle.dataset.vehicleSeats;
+        quoteMessage.textContent = `${vehicle.dataset.vehicleName} selected.`;
+    }));
+
+    document.querySelectorAll('[data-clear-field]').forEach((button) => button.addEventListener('click', () => {
+        const input = document.getElementById(button.dataset.clearField);
+        input.value = '';
+        input.focus();
+    }));
+
+    document.getElementById('quote-button').addEventListener('click', () => {
+        const pickup = document.getElementById('pickup-location').value.trim();
+        const dropoff = document.getElementById('dropoff-location').value.trim();
+        if (!pickup || !dropoff) {
+            quoteMessage.textContent = 'Enter both pickup and destination to see available rides.';
+            return;
+        }
+        const modeName = rideModeInput.value === 'delivery' ? 'delivery' : 'ride';
+        quoteMessage.textContent = `Showing ${vehicleName.textContent} ${modeName} options from ${pickup} to ${dropoff}.`;
+        document.getElementById('fleet').scrollIntoView({behavior: 'smooth', block: 'start'});
+    });
+
+    const hoursSlider = document.getElementById('driver-hours');
+    const hoursValue = document.getElementById('driver-hours-value');
+    const earningsValue = document.getElementById('driver-earnings');
+    hoursSlider.addEventListener('input', () => {
+        const hours = Number(hoursSlider.value);
+        hoursValue.textContent = `${hours} hrs`;
+        earningsValue.textContent = `UGX ${Math.round(850000 * hours / 35).toLocaleString('en-UG')}+`;
+    });
+</script>
 {% endblock %}

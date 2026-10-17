@@ -1,0 +1,129 @@
+{% load static %}
+
+<div class="home-page">
+    <section class="home-hero" id="ride-booking">
+        <div class="home-container home-hero-grid">
+            <div class="home-booking-column">
+                <div class="home-intro">
+                    <h1>Go anywhere in <span>Uganda,</span> effortlessly.</h1>
+                    <p>Request on-demand rides, schedule airport transfers to Entebbe, or dispatch express parcels across Uganda with precision real-time tracking.</p>
+                </div>
+
+                <section class="ride-panel" aria-label="Request A Lift">
+                    <div class="ride-mode-tabs" role="tablist" aria-label="Trip type">
+                        <button class="ride-mode is-active" type="button" role="tab" aria-selected="true" data-ride-mode="ride"><span aria-hidden="true">&#9638;</span> Ride Now</button>
+                        <button class="ride-mode" type="button" role="tab" aria-selected="false" data-ride-mode="reserve"><span aria-hidden="true">&#9635;</span> Reserve</button>
+                        <button class="ride-mode" type="button" role="tab" aria-selected="false" data-ride-mode="delivery"><span aria-hidden="true">&#9645;</span> Package Delivery</button>
+                    </div>
+                    <input type="hidden" id="ride-mode" value="ride">
+
+                    <div class="ride-location-stack">
+                        <div class="ride-location">
+                            <span class="ride-location-marker ride-location-marker--pickup" aria-hidden="true"></span>
+                            <span class="ride-location-copy"><label for="pickup-location"><small>PICKUP LOCATION</small></label><input id="pickup-location" value="Acacia Mall, Kisementi, Kololo" autocomplete="street-address"></span>
+                            <button class="ride-clear" type="button" data-clear-field="pickup-location" aria-label="Clear pickup location">×</button>
+                        </div>
+                        <div class="ride-location">
+                            <span class="ride-location-marker ride-location-marker--dropoff" aria-hidden="true"></span>
+                            <span class="ride-location-copy"><label for="dropoff-location"><small>DROPOFF DESTINATION</small></label><input id="dropoff-location" value="Entebbe International Airport (EBB)" autocomplete="street-address"></span>
+                            <button class="ride-clear" type="button" data-clear-field="dropoff-location" aria-label="Clear destination">×</button>
+                        </div>
+                    </div>
+
+                    <div class="ride-options-row">
+                        <label class="ride-time-select"><span aria-hidden="true">◷</span><select aria-label="Pickup time"><option>Leave now</option><option>In 30 minutes</option><option>Schedule for later</option></select></label>
+                        <div class="ride-category-list" aria-label="Vehicle filters">
+                            <button type="button" data-vehicle="easygo" data-vehicle-name="EasyGo" data-vehicle-price="From UGX 8,000" data-vehicle-eta="12 min ETA" data-vehicle-description="Everyday city rides • Compact cars" data-vehicle-seats="4 seats">EasyGo</button>
+                            <button class="is-active" type="button" data-vehicle="comfort" data-vehicle-name="Easy Comfort" data-vehicle-price="UGX 95,000" data-vehicle-eta="38 min ETA" data-vehicle-description="Smooth expressway transit • AC Sedans" data-vehicle-seats="4 seats">Comfort AC</button>
+                            <button type="button" data-vehicle="xl" data-vehicle-name="Easy XL" data-vehicle-price="From UGX 25,000" data-vehicle-eta="22 min ETA" data-vehicle-description="Group trips • SUVs and vans" data-vehicle-seats="6 seats">Easy XL</button>
+                            <button type="button" data-vehicle="executive" data-vehicle-name="Executive" data-vehicle-price="From UGX 45,000" data-vehicle-eta="38 min ETA" data-vehicle-description="Premium airport pickup • Chauffeur" data-vehicle-seats="4 seats">Executive</button>
+                        </div>
+                    </div>
+
+                    <div class="ride-selected-summary" aria-live="polite">
+                        <span class="ride-car-icon" aria-hidden="true">&#9638;</span>
+                        <span class="ride-summary-name"><strong id="selected-vehicle-name">Easy Comfort</strong><small id="selected-vehicle-description">Smooth expressway transit • AC Sedans</small></span>
+                        <span class="ride-summary-price"><strong id="selected-vehicle-price">UGX 95,000</strong><small id="selected-vehicle-eta">38 min ETA</small></span>
+                        <span class="ride-seat-pill" id="selected-vehicle-seats">4 seats</span>
+                    </div>
+
+                    <button class="ride-quote-button" type="button" id="quote-button">See Prices &amp; Request <span aria-hidden="true">&#8594;</span></button>
+                    <p class="ride-feedback" id="quote-message" role="status" aria-live="polite"></p>
+                    <div class="ride-trust-row"><span><b aria-hidden="true">♢</b> Vetted Local Drivers</span><span><b aria-hidden="true">▣</b> MoMo, Airtel &amp; Cash</span><span><b aria-hidden="true">◎</b> 24/7 Live GPS Telemetry</span></div>
+                </section>
+            </div>
+
+            <aside class="home-hero-visual">
+                <img src="{% static 'images/screen.png' %}" alt="A premium Easy Rides car pickup in Kampala at dusk">
+                <div class="hero-image-caption"><span class="home-eyebrow home-eyebrow--green">EXECUTIVE FLEET</span><h2>Kampala Dusk Dispatches</h2><p>From Kololo hills to Entebbe Expressway</p></div>
+                <div class="hero-rating"><span class="rating-star" aria-hidden="true">&#9734;</span><span><strong>4.92 / 5</strong> <small>(1.2M+ rides)</small><br><small>Trusted Drivers across Uganda</small></span></div>
+            </aside>
+        </div>
+    </section>
+
+    <section class="home-section home-fleet-section" id="fleet">
+        <div class="home-container">
+            <header class="home-section-heading">
+                <span class="home-eyebrow">TAILORED TO UGANDA'S ROADS</span>
+                <h2>Every way to move around<br class="desktop-break"> Uganda</h2>
+                <p>From prompt everyday city commutes in efficient compacts to spacious 6-seater SUVs and premium airport sedans with chilled air conditioning.</p>
+            </header>
+            <div class="fleet-grid">
+                <article class="fleet-card" data-fleet-card="easygo">
+                    <div class="fleet-card-top"><span class="fleet-icon" aria-hidden="true">&#9638;</span><span class="home-chip">Pocket Friendly</span></div>
+                    <h3>EasyGo</h3><p>Everyday compact cars engineered for grocery errands, commutes to Kololo, and quick economical hops across town.</p>
+                    <div class="fleet-card-bottom"><span>Fares starting from</span><strong>UGX 8,000</strong><button type="button" data-vehicle="easygo" data-vehicle-name="EasyGo" data-vehicle-price="From UGX 8,000" data-vehicle-eta="12 min ETA" data-vehicle-description="Everyday city rides • Compact cars" data-vehicle-seats="4 seats">Request EasyGo</button></div>
+                </article>
+                <article class="fleet-card is-selected" data-fleet-card="comfort">
+                    <div class="fleet-card-top"><span class="fleet-icon fleet-icon--dark" aria-hidden="true">&#9638;</span><span class="home-chip home-chip--dark">Top Choice</span></div>
+                    <h3>Easy Comfort</h3><p>Modern sedans with spacious legroom, climate-controlled AC, whisper-quiet cabins, and 4.8+ rated drivers.</p>
+                    <div class="fleet-card-bottom"><span>Fares starting from</span><strong>UGX 15,000</strong><button type="button" data-vehicle="comfort" data-vehicle-name="Easy Comfort" data-vehicle-price="UGX 95,000" data-vehicle-eta="38 min ETA" data-vehicle-description="Smooth expressway transit • AC Sedans" data-vehicle-seats="4 seats">Request Comfort</button></div>
+                </article>
+                <article class="fleet-card" data-fleet-card="xl">
+                    <div class="fleet-card-top"><span class="fleet-icon" aria-hidden="true">&#9638;</span><span class="home-chip home-chip--green">6 Seater</span></div>
+                    <h3>Easy XL</h3><p>Roomy 6-passenger SUVs and vans with extended cargo space for family trips, group outings, and heavy luggage.</p>
+                    <div class="fleet-card-bottom"><span>Fares starting from</span><strong>UGX 25,000</strong><button type="button" data-vehicle="xl" data-vehicle-name="Easy XL" data-vehicle-price="From UGX 25,000" data-vehicle-eta="22 min ETA" data-vehicle-description="Group trips • SUVs and vans" data-vehicle-seats="6 seats">Request Easy XL</button></div>
+                </article>
+                <article class="fleet-card" data-fleet-card="executive">
+                    <div class="fleet-card-top"><span class="fleet-icon" aria-hidden="true">&#9992;</span><span class="home-chip">VIP &amp; Corporate</span></div>
+                    <h3>Executive &amp; Airport</h3><p>Chauffeured premium luxury sedans for business executives, diplomatic delegates, and scheduled VIP airport transfers.</p>
+                    <div class="fleet-card-bottom"><span>Fares starting from</span><strong>UGX 45,000</strong><button type="button" data-vehicle="executive" data-vehicle-name="Executive" data-vehicle-price="From UGX 45,000" data-vehicle-eta="38 min ETA" data-vehicle-description="Premium airport pickup • Chauffeur" data-vehicle-seats="4 seats">Book Executive</button></div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section home-routes-section" id="routes">
+        <div class="home-container">
+            <div class="home-routes-heading"><header class="home-section-heading"><span class="home-eyebrow">GUARANTEED TRANSPARENCY</span><h2>Popular routes with guaranteed upfront pricing</h2><p>No surprise surge pricing midway. Clear toll handling (Expressway included) and predictable rates.</p></header><a href="#city-coverage">Explore all city coverage <span aria-hidden="true">&#8594;</span></a></div>
+            <div class="route-grid">
+                <article class="route-card"><div><strong>Acacia Mall, Kisementi <span>⇄</span> Entebbe Airport (EBB)</strong><span class="home-chip home-chip--green">Bestseller</span></div><p>Expressway toll fee included • Free 30-min airport waiting time on arrival</p><div class="route-price"><span>◷ &nbsp; Estimated time: <strong>40-45 mins</strong></span><strong>UGX 95,000</strong></div></article>
+                <article class="route-card"><div><strong>Kampala CBD <span>⇄</span> Munyonyo Commonwealth Resort</strong><span class="home-chip">Lakeside</span></div><p>Scenic Lake Victoria lakeside route • Ideal for conferences and weekend getaways</p><div class="route-price"><span>◷ &nbsp; Estimated time: <strong>25 mins</strong></span><strong>UGX 28,000</strong></div></article>
+                <article class="route-card"><div><strong>Bugolobi (Bandali Rise) <span>⇄</span> Kololo / Nakasero</strong><span class="home-chip">Nightlife</span></div><p>City dining &amp; nightlife corridor • High driver availability at all night hours</p><div class="route-price"><span>◷ &nbsp; Estimated time: <strong>14 mins</strong></span><strong>UGX 12,000</strong></div></article>
+                <article class="route-card"><div><strong>Makerere University <span>⇄</span> Ntinda Complex</strong><span class="home-chip">Campus</span></div><p>Daily student &amp; campus commute • Direct routing via Wandegeya and Bukoto</p><div class="route-price"><span>◷ &nbsp; Estimated time: <strong>18 mins</strong></span><strong>UGX 14,000</strong></div></article>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-driver-section" id="driver-opportunity">
+        <div class="home-container home-driver-grid">
+            <div class="home-driver-copy"><span class="home-eyebrow home-eyebrow--green">&#8599; DRIVER &amp; PARTNER OPPORTUNITY</span><h2>Drive when you want, earn what you need.</h2><p>Make money on your own schedule across Kampala, Wakiso, and Entebbe. Zero onboarding fees, instant daily or weekly payouts straight to your MTN MoMo or Airtel Money account, and access to our 24/7 dedicated driver support center in the Industrial Area.</p><div class="driver-stats"><div><strong>0%</strong><span>Sign-up / Signup Fee</span><small>Start driving within 24h</small></div><div><strong>Daily</strong><span>Mobile Money Payouts</span><small>Direct to MTN &amp; Airtel</small></div><div><strong>24/7</strong><span>Support Hub</span><small>Industrial Area Kampala</small></div></div><div class="driver-actions"><a class="driver-primary" href="{% url 'register' %}?role=driver">Sign Up to Drive</a><a class="driver-secondary" href="#driver-requirements">Explore Driver Requirements <span aria-hidden="true">&#8594;</span></a></div></div>
+            <div class="earnings-panel"><div class="earnings-panel-head"><span class="earnings-icon" aria-hidden="true">▣</span><span><small>Weekly Earnings Potential</small><strong id="driver-earnings">UGX 850,000+</strong></span><span class="home-chip home-chip--green">Active</span></div><div class="hours-control"><label for="driver-hours">Hours driven per week: <strong id="driver-hours-value">35 hrs</strong></label><input id="driver-hours" type="range" min="10" max="60" value="35"><div><small>Part-time (10h)</small><small>Full-time (60h)</small></div></div><div class="earning-detail"><span>Fuel discount partner:</span><strong>TotalEnergies &amp; Shell</strong></div><div class="earning-detail"><span>Passenger insurance:</span><strong>Jubilee Allianz Covered</strong></div><p class="driver-notice">&#10003; &nbsp; Bring your national ID, valid driving permit, and vehicle logbook to get activated today.</p></div>
+        </div>
+    </section>
+
+    <section class="home-section home-safety-section" id="safety">
+        <div class="home-container">
+            <header class="home-section-heading home-section-heading--center"><span class="home-eyebrow">SECURITY &amp; CONVENIENCE</span><h2>Built with Ugandan peace of mind</h2><p>Comprehensive safety infrastructure, instant local mobile wallet payments, and end-to-end trip accountability.</p></header>
+            <div class="safety-grid">
+                <article class="safety-card"><span class="safety-icon" aria-hidden="true">♢</span><h3>Dedicated Safety Kit</h3><p>Every ride is backed by an in-app emergency SOS button linked directly to the Uganda Police Force (UPF) 999 dispatch center and our rapid-response road patrol.</p><ul><li>Mandatory driver background verification</li><li>Annual vehicle safety inspection &amp; seatbelt standard</li><li>Speed telemetry &amp; harsh braking alerts</li></ul></article>
+                <article class="safety-card"><span class="safety-icon" aria-hidden="true">◎</span><h3>Mobile Money Ready</h3><p>Seamlessly link your MTN Mobile Money or Airtel Money wallet for touch-free automated payments without fumbling for loose change or cash notes.</p><div class="payment-methods"><span>MTN MoMo</span><span>Airtel Money</span><span>Visa / Card</span><span>Cash</span></div></article>
+                <article class="safety-card"><span class="safety-icon" aria-hidden="true">◉</span><h3>Real-Time Trip Sharing</h3><p>Send your live GPS location, driver details, and car number plate to friends or family via WhatsApp, SMS, or Telegram with a single tap.</p><ul><li>Live route progress updates</li><li>Annual vehicle safety inspection &amp; seatbelt standard</li><li>Automated arrival notifications</li></ul></article>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-app-section" id="app-download">
+        <div class="home-container app-download-panel"><div><span class="home-eyebrow">POCKET MOBILITY</span><h2>Download the Easy Rides App</h2><p>Scan the QR code with your phone camera to download directly, or find us on iOS App Store and Google Play Store for immediate trip dispatch.</p><div class="app-store-links"><a class="home-store-button" href="#app-download"><span aria-hidden="true">&#63743;</span><span><small>DOWNLOAD ON</small>Apple App Store</span></a><a class="home-store-button" href="#app-download"><span aria-hidden="true">&#9655;</span><span><small>GET IT ON</small>Google Play</span></a></div></div><div class="app-qr-panel"><div class="fake-qr" aria-label="QR code placeholder" role="img"><span></span></div><div><strong>Scan to ride</strong><small>Compatible with iOS &amp; Android devices in Uganda</small></div></div></div>
+    </section>
+</div>

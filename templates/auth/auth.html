@@ -1,13 +1,13 @@
 {% extends "common/base.html" %}
 
-{% block title %}Choose how to use Uber{% endblock %}
+{% block title %}Choose how to use Easy Rides{% endblock %}
 
 {% block content %}
 <section class="auth-screen">
     <div class="auth-role-wrap">
         <header class="auth-role-intro">
             <span class="uber-pill">ACCOUNT SETUP · STEP 1 OF 3</span>
-            <h1 class="auth-heading auth-heading--spaced">How do you want to use Uber?</h1>
+            <h1 class="auth-heading auth-heading--spaced">How do you want to use Easy Rides?</h1>
             <p class="auth-copy">You can always switch or add driver status later from your account.</p>
         </header>
 
@@ -17,15 +17,15 @@
                     <span class="uber-pill">PASSENGER</span>
                     <span class="uber-status">Instant dispatch</span>
                 </div>
-                <h2>Request a Ride</h2>
+                <h2>Request A Lift</h2>
                 <p>Reliable point-to-point transportation on demand, anytime across the globe.</p>
                 <div class="auth-role-feature"><strong>Anywhere, Anytime</strong><span class="uber-pill">24/7 Available</span></div>
                 <ul class="auth-role-benefits">
                     <li>Tap and ride anywhere in 10,000+ cities</li>
-                    <li>Choose from UberX, Comfort, Black, or XL</li>
+                    <li>Choose from Standard, Comfort, Premium, or XL</li>
                     <li>Seamless payments and live GPS tracking</li>
                 </ul>
-                <a class="uber-button" href="{% url 'register' %}?role=customer">Continue as Rider <span aria-hidden="true">&#8594;</span></a>
+                <a class="uber-button" href="{% url 'register' %}?role=customer">Continue as Driver <span aria-hidden="true">&#8594;</span></a>
             </article>
 
             <article class="uber-card auth-role-card">
@@ -34,7 +34,7 @@
                     <span class="uber-status">Flexible hours</span>
                 </div>
                 <h2>Drive &amp; Earn</h2>
-                <p>Make money on your own schedule. Cash out immediately with Uber Pro perks.</p>
+                <p>Make money on your own schedule with flexible payouts and driver-partner benefits.</p>
                 <div class="auth-role-feature"><strong>$1,420 / wk</strong><span class="uber-help">Top partner median</span></div>
                 <ul class="auth-role-benefits">
                     <li>Drive on your own schedule with your vehicle</li>
@@ -48,9 +48,9 @@
         <div class="auth-role-perks" aria-label="Account benefits">
             <div class="auth-role-perk"><strong>One Global Login</strong><br>Switch between roles in seconds</div>
             <div class="auth-role-perk"><strong>Identity Protection</strong><br>Multi-layer safety verification</div>
-            <div class="auth-role-perk"><strong>Unified Uber Wallet</strong><br>Seamless earnings and rider balance</div>
+            <div class="auth-role-perk"><strong>Easy Rides Wallet</strong><br>Seamless earnings and Driver balance</div>
         </div>
-        <div class="auth-business-banner"><span>Looking for corporate travel or the Uber Eats merchant portal?</span><a href="#business">Explore Uber for Business &#8599;</a></div>
+        <div class="auth-business-banner"><span>Looking for corporate travel or delivery-partner tools?</span><a href="#business">Explore Easy Rides for Business &#8599;</a></div>
     </div>
 </section>
 {% endblock %}

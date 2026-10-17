@@ -1,15 +1,15 @@
 {% extends "common/base.html" %}
 
-{% block title %}Sign in | Uber{% endblock %}
+{% block title %}Sign in | Easy Rides{% endblock %}
 
 {% block content %}
 <section class="auth-screen">
     <div class="auth-login-layout">
         <aside class="auth-showcase">
-            <div>
+            <div class="auth-showcase-copy">
                 <span class="uber-pill">ONE ACCOUNT · EVERYTHING</span>
-                <h1>Move freely.</h1>
-                <p>Seamless journeys, quick eats, and courier deliveries unified under your single Uber profile.</p>
+                <h1>Arrive in Style</h1>
+                <p>Effortless luxury rides, executive comfort, and punctuality unified under your single Uber profile.</p>
             </div>
             {% comment %} <div class="auth-ride-preview">
                 <div class="auth-ride-preview-top">
@@ -43,18 +43,18 @@
                     </div>
                     {% for error in form.username.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
                 </div>
-                <div class="auth-form-field" id="password-step" hidden>
+                <div class="auth-form-field" id="password-step" {% if not form.is_bound %}hidden{% endif %}>
                     <label class="uber-label" for="{{ form.password.id_for_label }}">Password</label>
                     {{ form.password }}
                     {% for error in form.password.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
                 </div>
                 {% if error_message %}<p class="uber-help" role="alert">{{ error_message }}</p>{% endif %}
-                <button class="uber-button auth-submit" id="login-continue" type="button">Continue <span aria-hidden="true">&#8594;</span></button>
+                <button class="uber-button auth-submit" id="login-continue" type="button">{% if form.is_bound %}Sign in{% else %}Continue{% endif %} <span aria-hidden="true">&#8594;</span></button>
             </form>
 
             <p class="auth-disclaimer">By continuing, you agree to receive SMS notifications. Message and data rates may apply.</p>
 
-            <div class="auth-account-switch"><span>New to Uber?</span><a href="{% url 'register' %}">Create an account &#8250;</a></div>
+            <div class="auth-account-switch"><span>New to Easy Rides?</span><a href="{% url 'register' %}">Create an account &#8250;</a></div>
         </section>
     </div>
 </section>
@@ -68,16 +68,23 @@
     const identifierLabel = document.getElementById('identifier-label');
     const passwordStep = document.getElementById('password-step');
     const continueButton = document.getElementById('login-continue');
-    identifier.placeholder = '(555) 000-0000';
+    const password = document.getElementById('{{ form.password.id_for_label }}');
+    const loginForm = document.getElementById('login-form');
+    identifier.placeholder = '07XXXXXXXX';
 
-    loginTabs.forEach((tab) => tab.addEventListener('click', () => {
-        loginTabs.forEach((item) => item.setAttribute('aria-selected', String(item === tab)));
-        const isEmail = tab.dataset.loginMode === 'email';
+    function setLoginMode(isEmail) {
+        loginTabs.forEach((item) => item.setAttribute('aria-selected', String((item.dataset.loginMode === 'email') === isEmail)));
         identifierControl.classList.toggle('is-email', isEmail);
         identifier.type = isEmail ? 'email' : 'tel';
-        identifier.placeholder = isEmail ? 'name@example.com' : '(555) 000-0000';
+        identifier.placeholder = isEmail ? 'name@example.com' : '07XXXXXXXX';
         identifierLabel.textContent = isEmail ? 'Email Address' : 'Mobile Number';
+    }
+
+    loginTabs.forEach((tab) => tab.addEventListener('click', () => {
+        setLoginMode(tab.dataset.loginMode === 'email');
     }));
+
+    if (identifier.value.includes('@')) setLoginMode(true);
 
     continueButton.addEventListener('click', () => {
         if (!identifier.value.trim()) {
@@ -87,9 +94,23 @@
         if (passwordStep.hidden) {
             passwordStep.hidden = false;
             continueButton.innerHTML = 'Sign in <span aria-hidden="true">&#8594;</span>';
-            document.getElementById('{{ form.password.id_for_label }}').focus();
+            password.focus();
         } else {
-            document.getElementById('login-form').requestSubmit();
+            loginForm.requestSubmit();
+        }
+    });
+
+    identifier.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            continueButton.click();
+        }
+    });
+
+    password.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            loginForm.requestSubmit();
         }
     });
 </script>
