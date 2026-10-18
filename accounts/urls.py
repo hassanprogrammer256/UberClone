@@ -1,9 +1,13 @@
 from django.urls import path
-from .views import RegisterView,LoginView, auth_view
+from .views import *
+
 
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),
+    path('auth/', auth_view, name='auth'),
     path('login/', LoginView.as_view(), name='login'),
-    path('get-started/', auth_view, name='auth')
+    path('register/', RegisterView, name='register'),
+    path('customer/', CustomerIndexView, name='customer_index'),
+    path('driver/', DriverIndexView, name='driver_index'),
+    path('admin/', AdminIndexView, name='admin_index'),
 ]
