@@ -1,0 +1,6 @@
+<article class="cluster-card">
+    <div><h3>{{ cluster_name }}</h3><span>{{ vehicle_count }} <small>Cars</small></span></div>
+    <p>Supply level <b>{{ supply_label }}</b></p>
+    <div class="supply-bar{% if supply_class %} {{ supply_class }}{% endif %}"><i style="width: {{ supply_percent }}%"></i></div>
+    <p class="pickup-time">Avg Pickup Time: {{ pickup_time }}</p>
+</article>

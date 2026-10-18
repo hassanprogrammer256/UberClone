@@ -17,7 +17,7 @@
                     <span class="uber-pill">2 min away</span>
                 </div>
                 <div class="auth-ride-preview-bottom">
-                    <span aria-hidden="true">&#10148;</span>
+                    <i class="bx bx-navigation" aria-hidden="true"></i>
                     <div><strong>Financial District</strong><br><span class="uber-help">Optimal route dispatched</span></div>
                 </div>
             </div>
@@ -49,12 +49,12 @@
                     {% for error in form.password.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
                 </div>
                 {% if error_message %}<p class="uber-help" role="alert">{{ error_message }}</p>{% endif %}
-                <button class="uber-button auth-submit" id="login-continue" type="button">{% if form.is_bound %}Sign in{% else %}Continue{% endif %} <span aria-hidden="true">&#8594;</span></button>
+                <button class="uber-button auth-submit" id="login-continue" type="button">{% if form.is_bound %}Sign in{% else %}Continue{% endif %} <i class="bx bx-right-arrow-alt" aria-hidden="true"></i></button>
             </form>
 
             <p class="auth-disclaimer">By continuing, you agree to receive SMS notifications. Message and data rates may apply.</p>
 
-            <div class="auth-account-switch"><span>New to Easy Rides?</span><a href="{% url 'register' %}">Create an account &#8250;</a></div>
+            <div class="auth-account-switch"><span>New to Easy Rides?</span><a href="{% url 'register' %}">Create an account <i class="bx bx-chevron-right" aria-hidden="true"></i></a></div>
         </section>
     </div>
 </section>
@@ -89,11 +89,16 @@
     continueButton.addEventListener('click', () => {
         if (!identifier.value.trim()) {
             identifier.focus();
+            window.showSnackbar({
+                type: 'error',
+                title: 'Phone number or email required',
+                message: 'Enter your phone number or email to continue.'
+            });
             return;
         }
         if (passwordStep.hidden) {
             passwordStep.hidden = false;
-            continueButton.innerHTML = 'Sign in <span aria-hidden="true">&#8594;</span>';
+            continueButton.innerHTML = 'Sign in <i class="bx bx-right-arrow-alt" aria-hidden="true"></i>';
             password.focus();
         } else {
             loginForm.requestSubmit();

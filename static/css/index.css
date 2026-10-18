@@ -630,14 +630,8 @@ input.auth-avatar-input {
 	background: var(--uber-surface-strong);
 }
 
-.password-visibility-toggle svg {
-	width: 18px;
-	height: 18px;
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 1.7;
-	stroke-linecap: round;
-	stroke-linejoin: round;
+.password-visibility-toggle > .bx {
+	font-size: 19px;
 }
 
 .auth-identifier-control {
@@ -876,6 +870,13 @@ input.auth-avatar-input {
 	font-size: 10px;
 	font-weight: 700;
 	text-transform: uppercase;
+}
+
+.auth-trust-row .bx,
+.auth-metadata .bx {
+	margin-right: 3px;
+	color: var(--uber-green);
+	font-size: 14px;
 }
 
 .auth-verify-wrap {
@@ -1198,6 +1199,10 @@ input.auth-avatar-input {
 	background: var(--uber-black);
 }
 
+.ride-mode > .bx {
+	font-size: 16px;
+}
+
 .ride-location-stack {
 	position: relative;
 	display: grid;
@@ -1289,6 +1294,10 @@ input.auth-avatar-input {
 	cursor: pointer;
 }
 
+.ride-clear > .bx {
+	font-size: 20px;
+}
+
 .ride-options-row {
 	min-height: 54px;
 	display: flex;
@@ -1306,6 +1315,10 @@ input.auth-avatar-input {
 	padding: 0 12px;
 	background: var(--uber-surface-soft);
 	border-radius: var(--uber-radius);
+}
+
+.ride-time-select > .bx {
+	font-size: 17px;
 }
 
 .ride-time-select select {
@@ -1365,6 +1378,11 @@ input.auth-avatar-input {
 	background: var(--uber-black);
 	border-radius: 50%;
 	font-size: 20px;
+}
+
+.ride-car-icon > .bx,
+.fleet-icon > .bx {
+	font-size: 21px;
 }
 
 .ride-summary-name,
@@ -1433,6 +1451,10 @@ input.auth-avatar-input {
 	background: #222222;
 }
 
+.ride-quote-button > .bx {
+	font-size: 20px;
+}
+
 .ride-feedback {
 	min-height: 0;
 	margin: 0;
@@ -1459,7 +1481,7 @@ input.auth-avatar-input {
 	gap: 6px;
 }
 
-.ride-trust-row b {
+.ride-trust-row > span > .bx {
 	color: var(--uber-blue-bright);
 	font-size: 16px;
 }
@@ -1546,6 +1568,10 @@ input.auth-avatar-input {
 	color: var(--uber-green);
 	background: #001f11;
 	border-radius: 50%;
+	font-size: 22px;
+}
+
+.rating-star > .bx {
 	font-size: 22px;
 }
 
@@ -1765,9 +1791,10 @@ input.auth-avatar-input {
 	font-size: 14px;
 }
 
-.route-card > div:first-child strong span {
+.route-card > div:first-child strong > .bx {
 	padding-inline: 4px;
 	color: var(--uber-ink-muted);
+	font-size: 16px;
 }
 
 .route-card p {
@@ -1791,6 +1818,11 @@ input.auth-avatar-input {
 .route-price span {
 	color: var(--uber-ink-muted);
 	font-size: 11px;
+}
+
+.route-price span > .bx {
+	margin-right: 4px;
+	font-size: 14px;
 }
 
 .route-price > strong {
@@ -1931,6 +1963,10 @@ input.auth-avatar-input {
 	border-radius: 50%;
 }
 
+.earnings-icon > .bx {
+	font-size: 21px;
+}
+
 .hours-control {
 	padding: 16px;
 	background: var(--uber-surface-soft);
@@ -1986,6 +2022,12 @@ input.auth-avatar-input {
 	font-size: 11px;
 }
 
+.driver-notice > .bx {
+	margin-right: 5px;
+	color: var(--uber-green);
+	font-size: 15px;
+}
+
 .home-safety-section .home-section-heading--center {
 	max-width: 700px;
 	margin: 0 auto 44px;
@@ -2015,6 +2057,10 @@ input.auth-avatar-input {
 	margin-bottom: 18px;
 	background: var(--uber-surface-soft);
 	border-radius: 14px;
+	font-size: 24px;
+}
+
+.safety-icon > .bx {
 	font-size: 24px;
 }
 
@@ -2116,7 +2162,7 @@ input.auth-avatar-input {
 	background: #222222;
 }
 
-.home-store-button > span:first-child {
+.home-store-button > .bx {
 	font-size: 22px;
 }
 
@@ -2195,6 +2241,10 @@ input.auth-avatar-input {
 	font-weight: 600;
 }
 
+.home-helpline > .bx {
+	font-size: 16px;
+}
+
 .home-helpline strong {
 	color: var(--uber-blue);
 }
@@ -2257,6 +2307,10 @@ input.auth-avatar-input {
 	background: var(--uber-surface-soft);
 	border-radius: 50%;
 	font-size: 15px;
+}
+
+.home-social-links .bx {
+	font-size: 17px;
 }
 
 .home-legal-links a {

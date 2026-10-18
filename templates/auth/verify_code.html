@@ -7,11 +7,11 @@
 {% block content %}
 <section class="auth-screen">
     <div class="auth-verify-wrap">
-        <a href="{% url 'login' %}">&#8592; Back to sign in</a>
+        <a href="{% url 'login' %}"><i class="bx bx-left-arrow-alt" aria-hidden="true"></i> Back to sign in</a>
         <section class="uber-card auth-verify-card" aria-labelledby="verify-title">
             <div class="auth-card-topline">
                 <span class="uber-pill">2FA SECURED</span>
-                <span class="uber-status" aria-label="Secure session">●</span>
+                <span class="uber-status" aria-label="Secure session"><i class="bx bx-shield-quarter" aria-hidden="true"></i></span>
             </div>
             <h1 class="auth-heading auth-heading--verify" id="verify-title">Enter the 6-digit code</h1>
             <p class="auth-copy">We sent a verification code to <strong>{{ phone_number|default:"+1 (555) 234-5678" }}</strong>. <a href="{% url 'login' %}">Edit number</a></p>
@@ -25,7 +25,7 @@
                 </div>
                 <div class="auth-inline-between"><span class="uber-help">Security code is valid for 10 minutes</span><span class="uber-status">Auto-detect active</span></div>
                 <input type="hidden" name="code" id="verification-code">
-                <button class="uber-button auth-submit" type="submit">Verify &amp; Continue <span aria-hidden="true">&#8594;</span></button>
+                <button class="uber-button auth-submit" type="submit">Verify &amp; Continue <i class="bx bx-right-arrow-alt" aria-hidden="true"></i></button>
             </form>
 
             <div class="auth-resend-panel">
@@ -37,7 +37,7 @@
             </div>
         </section>
         <p class="auth-security-note"><strong>Security notice:</strong> Never share your verification code with anyone, including Easy Rides support. Our team will never ask for this code.</p>
-        <div class="auth-metadata"><span>● Encrypted TLS 1.3</span><span>Device ID: 8F2A-941C</span><a href="#help">Help Center</a></div>
+        <div class="auth-metadata"><span><i class="bx bx-lock-alt" aria-hidden="true"></i> Encrypted TLS 1.3</span><span>Device ID: 8F2A-941C</span><a href="#help">Help Center</a></div>
     </div>
 </section>
 {% endblock %}

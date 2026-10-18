@@ -1,0 +1,4 @@
+<div class="panel-heading">
+    <div><h2{% if heading_id %} id="{{ heading_id }}"{% endif %}>{{ heading }}</h2>{% if subheading %}<p>{{ subheading }}</p>{% endif %}</div>
+    {% if heading_action %}<div class="panel-heading__action">{{ heading_action }}</div>{% endif %}
+</div>

@@ -1,0 +1,126 @@
+.app-snackbar-container {
+	position: fixed;
+	top: 18px;
+	right: 20px;
+	z-index: 3000;
+	width: min(390px, calc(100vw - 32px));
+	display: grid;
+	gap: 10px;
+	pointer-events: none;
+}
+
+.app-snackbar {
+	--snackbar-accent: #276ef1;
+	min-width: 0;
+	display: grid;
+	grid-template-columns: 22px minmax(0, 1fr) 32px;
+	align-items: start;
+	gap: 12px;
+	padding: 14px 12px 14px 16px;
+	color: #171b24;
+	background: #fff;
+	border: 1px solid #e6e7ec;
+	border-left: 4px solid var(--snackbar-accent);
+	border-radius: 8px;
+	box-shadow: 0 8px 28px rgb(15 17 21 / 14%);
+	font-family: Inter, "Segoe UI", sans-serif;
+	opacity: 0;
+	transform: translateY(-8px);
+	transition: opacity 180ms ease, transform 180ms ease;
+	pointer-events: auto;
+}
+
+.app-snackbar.is-visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.app-snackbar.is-leaving {
+	opacity: 0;
+	transform: translateY(-6px);
+}
+
+.app-snackbar > [data-snackbar-icon] {
+	margin-top: 1px;
+	color: var(--snackbar-accent);
+	font-size: 21px;
+}
+
+.app-snackbar--success {
+	--snackbar-accent: #078c4b;
+}
+
+.app-snackbar--error {
+	--snackbar-accent: #ba1a1a;
+}
+
+.app-snackbar--info {
+	--snackbar-accent: #276ef1;
+}
+
+.app-snackbar__content {
+	min-width: 0;
+	padding-top: 1px;
+}
+
+.app-snackbar__content strong {
+	display: block;
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.35;
+}
+
+.app-snackbar__content p {
+	margin: 3px 0 0;
+	color: #56545d;
+	font-size: 12px;
+	line-height: 1.45;
+	overflow-wrap: anywhere;
+}
+
+.app-snackbar__content p[hidden] {
+	display: none;
+}
+
+.app-snackbar__dismiss {
+	width: 32px;
+	height: 32px;
+	display: grid;
+	place-items: center;
+	padding: 0;
+	color: #615e68;
+	background: transparent;
+	border: 0;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.app-snackbar__dismiss:hover {
+	color: #171b24;
+	background: #f0f1f5;
+}
+
+.app-snackbar__dismiss .bx {
+	font-size: 20px;
+}
+
+.app-snackbar :focus-visible {
+	outline: 2px solid var(--snackbar-accent);
+	outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+	.app-snackbar-container {
+		top: auto;
+		right: 12px;
+		bottom: calc(12px + env(safe-area-inset-bottom));
+		left: 12px;
+		width: auto;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.app-snackbar {
+		transition: none;
+	}
+}

@@ -1,0 +1,16 @@
+<div class="app-snackbar-container" id="app-snackbar-container" aria-label="Notifications"></div>
+<template id="app-snackbar-template">
+    <article class="app-snackbar">
+        <i class="bx" data-snackbar-icon aria-hidden="true"></i>
+        <div class="app-snackbar__content">
+            <strong data-snackbar-title></strong>
+            <p data-snackbar-message></p>
+        </div>
+        <button class="app-snackbar__dismiss" type="button" data-snackbar-dismiss aria-label="Dismiss notification">
+            <i class="bx bx-x" aria-hidden="true"></i>
+        </button>
+    </article>
+</template>
+{% for message in messages %}
+    <template data-server-snackbar data-type="{{ message.tags|default:'info' }}">{{ message }}</template>
+{% endfor %}
