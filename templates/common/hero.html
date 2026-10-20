@@ -10,46 +10,26 @@
                 </div>
 
                 <section class="ride-panel" aria-label="Request A Lift">
-                    <div class="ride-mode-tabs" role="tablist" aria-label="Trip type">
-                        <button class="ride-mode is-active" type="button" role="tab" aria-selected="true" data-ride-mode="ride"><i class="bx bx-car" aria-hidden="true"></i> Ride Now</button>
-                        <button class="ride-mode" type="button" role="tab" aria-selected="false" data-ride-mode="reserve"><i class="bx bx-calendar" aria-hidden="true"></i> Reserve</button>
-                        <button class="ride-mode" type="button" role="tab" aria-selected="false" data-ride-mode="delivery"><i class="bx bx-package" aria-hidden="true"></i> Package Delivery</button>
-                    </div>
-                    <input type="hidden" id="ride-mode" value="ride">
-
+                    <div class="ride-panel-content">
                     <div class="ride-location-stack">
-                        <div class="ride-location">
+                        <div class="ride-location" data-location-autocomplete>
                             <span class="ride-location-marker ride-location-marker--pickup" aria-hidden="true"></span>
-                            <span class="ride-location-copy"><label for="pickup-location"><small>PICKUP LOCATION</small></label><input id="pickup-location" value="Acacia Mall, Kisementi, Kololo" autocomplete="street-address"></span>
+                            <span class="ride-location-copy"><label for="pickup-location"><small>PICKUP LOCATION</small></label><input id="pickup-location" placeholder="Search pickup location" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="pickup-suggestions" data-location-input><span class="location-sr-only" data-location-status aria-live="polite"></span></span>
                             <button class="ride-clear" type="button" data-clear-field="pickup-location" aria-label="Clear pickup location"><i class="bx bx-x" aria-hidden="true"></i></button>
+                            <div class="location-suggestions" id="pickup-suggestions" role="listbox" aria-label="Pickup locations" data-location-list hidden></div>
                         </div>
-                        <div class="ride-location">
+                        <div class="ride-location" data-location-autocomplete>
                             <span class="ride-location-marker ride-location-marker--dropoff" aria-hidden="true"></span>
-                            <span class="ride-location-copy"><label for="dropoff-location"><small>DROPOFF DESTINATION</small></label><input id="dropoff-location" value="Entebbe International Airport (EBB)" autocomplete="street-address"></span>
+                            <span class="ride-location-copy"><label for="dropoff-location"><small>DROPOFF DESTINATION</small></label><input id="dropoff-location" placeholder="Search destination" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="dropoff-suggestions" data-location-input><span class="location-sr-only" data-location-status aria-live="polite"></span></span>
                             <button class="ride-clear" type="button" data-clear-field="dropoff-location" aria-label="Clear destination"><i class="bx bx-x" aria-hidden="true"></i></button>
+                            <div class="location-suggestions" id="dropoff-suggestions" role="listbox" aria-label="Destination locations" data-location-list hidden></div>
                         </div>
-                    </div>
-
-                    <div class="ride-options-row">
-                        <label class="ride-time-select"><i class="bx bx-time-five" aria-hidden="true"></i><select aria-label="Pickup time"><option>Leave now</option><option>In 30 minutes</option><option>Schedule for later</option></select></label>
-                        <div class="ride-category-list" aria-label="Vehicle filters">
-                            <button type="button" data-vehicle="easygo" data-vehicle-name="EasyGo" data-vehicle-price="From UGX 8,000" data-vehicle-eta="12 min ETA" data-vehicle-description="Everyday city rides • Compact cars" data-vehicle-seats="4 seats">EasyGo</button>
-                            <button class="is-active" type="button" data-vehicle="comfort" data-vehicle-name="Easy Comfort" data-vehicle-price="UGX 95,000" data-vehicle-eta="38 min ETA" data-vehicle-description="Smooth expressway transit • AC Sedans" data-vehicle-seats="4 seats">Comfort AC</button>
-                            <button type="button" data-vehicle="xl" data-vehicle-name="Easy XL" data-vehicle-price="From UGX 25,000" data-vehicle-eta="22 min ETA" data-vehicle-description="Group trips • SUVs and vans" data-vehicle-seats="6 seats">Easy XL</button>
-                            <button type="button" data-vehicle="executive" data-vehicle-name="Executive" data-vehicle-price="From UGX 45,000" data-vehicle-eta="38 min ETA" data-vehicle-description="Premium airport pickup • Chauffeur" data-vehicle-seats="4 seats">Executive</button>
-                        </div>
-                    </div>
-
-                    <div class="ride-selected-summary" aria-live="polite">
-                        <span class="ride-car-icon" aria-hidden="true"><i class="bx bxs-car"></i></span>
-                        <span class="ride-summary-name"><strong id="selected-vehicle-name">Easy Comfort</strong><small id="selected-vehicle-description">Smooth expressway transit • AC Sedans</small></span>
-                        <span class="ride-summary-price"><strong id="selected-vehicle-price">UGX 95,000</strong><small id="selected-vehicle-eta">38 min ETA</small></span>
-                        <span class="ride-seat-pill" id="selected-vehicle-seats">4 seats</span>
                     </div>
 
                     <button class="ride-quote-button" type="button" id="quote-button">See Prices &amp; Request <i class="bx bx-right-arrow-alt" aria-hidden="true"></i></button>
                     <p class="ride-feedback" id="quote-message" role="status" aria-live="polite"></p>
                     <div class="ride-trust-row"><span><i class="bx bx-shield-quarter" aria-hidden="true"></i> Vetted Local Drivers</span><span><i class="bx bx-wallet" aria-hidden="true"></i> MoMo, Airtel &amp; Cash</span><span><i class="bx bx-current-location" aria-hidden="true"></i> 24/7 Live GPS Telemetry</span></div>
+                    </div>
                 </section>
             </div>
 
@@ -58,38 +38,6 @@
                 <div class="hero-image-caption"><span class="home-eyebrow home-eyebrow--green">EXECUTIVE FLEET</span><h2>Kampala Dusk Dispatches</h2><p>From Kololo hills to Entebbe Expressway</p></div>
                 <div class="hero-rating"><span class="rating-star" aria-hidden="true"><i class="bx bxs-star"></i></span><span><strong>4.92 / 5</strong> <small>(1.2M+ rides)</small><br><small>Trusted Drivers across Uganda</small></span></div>
             </aside>
-        </div>
-    </section>
-
-    <section class="home-section home-fleet-section" id="fleet">
-        <div class="home-container">
-            <header class="home-section-heading">
-                <span class="home-eyebrow">TAILORED TO UGANDA'S ROADS</span>
-                <h2>Every way to move around<br class="desktop-break"> Uganda</h2>
-                <p>From prompt everyday city commutes in efficient compacts to spacious 6-seater SUVs and premium airport sedans with chilled air conditioning.</p>
-            </header>
-            <div class="fleet-grid">
-                <article class="fleet-card" data-fleet-card="easygo">
-                    <div class="fleet-card-top"><span class="fleet-icon" aria-hidden="true"><i class="bx bx-car"></i></span><span class="home-chip">Pocket Friendly</span></div>
-                    <h3>EasyGo</h3><p>Everyday compact cars engineered for grocery errands, commutes to Kololo, and quick economical hops across town.</p>
-                    <div class="fleet-card-bottom"><span>Fares starting from</span><strong>UGX 8,000</strong><button type="button" data-vehicle="easygo" data-vehicle-name="EasyGo" data-vehicle-price="From UGX 8,000" data-vehicle-eta="12 min ETA" data-vehicle-description="Everyday city rides • Compact cars" data-vehicle-seats="4 seats">Request EasyGo</button></div>
-                </article>
-                <article class="fleet-card is-selected" data-fleet-card="comfort">
-                    <div class="fleet-card-top"><span class="fleet-icon fleet-icon--dark" aria-hidden="true"><i class="bx bx-car"></i></span><span class="home-chip home-chip--dark">Top Choice</span></div>
-                    <h3>Easy Comfort</h3><p>Modern sedans with spacious legroom, climate-controlled AC, whisper-quiet cabins, and 4.8+ rated drivers.</p>
-                    <div class="fleet-card-bottom"><span>Fares starting from</span><strong>UGX 15,000</strong><button type="button" data-vehicle="comfort" data-vehicle-name="Easy Comfort" data-vehicle-price="UGX 95,000" data-vehicle-eta="38 min ETA" data-vehicle-description="Smooth expressway transit • AC Sedans" data-vehicle-seats="4 seats">Request Comfort</button></div>
-                </article>
-                <article class="fleet-card" data-fleet-card="xl">
-                    <div class="fleet-card-top"><span class="fleet-icon" aria-hidden="true"><i class="bx bx-car"></i></span><span class="home-chip home-chip--green">6 Seater</span></div>
-                    <h3>Easy XL</h3><p>Roomy 6-passenger SUVs and vans with extended cargo space for family trips, group outings, and heavy luggage.</p>
-                    <div class="fleet-card-bottom"><span>Fares starting from</span><strong>UGX 25,000</strong><button type="button" data-vehicle="xl" data-vehicle-name="Easy XL" data-vehicle-price="From UGX 25,000" data-vehicle-eta="22 min ETA" data-vehicle-description="Group trips • SUVs and vans" data-vehicle-seats="6 seats">Request Easy XL</button></div>
-                </article>
-                <article class="fleet-card" data-fleet-card="executive">
-                    <div class="fleet-card-top"><span class="fleet-icon" aria-hidden="true"><i class="bx bx-plane"></i></span><span class="home-chip">VIP &amp; Corporate</span></div>
-                    <h3>Executive &amp; Airport</h3><p>Chauffeured premium luxury sedans for business executives, diplomatic delegates, and scheduled VIP airport transfers.</p>
-                    <div class="fleet-card-bottom"><span>Fares starting from</span><strong>UGX 45,000</strong><button type="button" data-vehicle="executive" data-vehicle-name="Executive" data-vehicle-price="From UGX 45,000" data-vehicle-eta="38 min ETA" data-vehicle-description="Premium airport pickup • Chauffeur" data-vehicle-seats="4 seats">Book Executive</button></div>
-                </article>
-            </div>
         </div>
     </section>
 
@@ -123,7 +71,4 @@
         </div>
     </section>
 
-    <section class="home-app-section" id="app-download">
-        <div class="home-container app-download-panel"><div><span class="home-eyebrow">POCKET MOBILITY</span><h2>Download the Easy Rides App</h2><p>Scan the QR code with your phone camera to download directly, or find us on iOS App Store and Google Play Store for immediate trip dispatch.</p><div class="app-store-links"><a class="home-store-button" href="#app-download"><i class="bx bxl-apple" aria-hidden="true"></i><span><small>DOWNLOAD ON</small>Apple App Store</span></a><a class="home-store-button" href="#app-download"><i class="bx bxl-play-store" aria-hidden="true"></i><span><small>GET IT ON</small>Google Play</span></a></div></div><div class="app-qr-panel"><div class="fake-qr" aria-label="QR code placeholder" role="img"><span></span></div><div><strong>Scan to ride</strong><small>Compatible with iOS &amp; Android devices in Uganda</small></div></div></div>
-    </section>
 </div>

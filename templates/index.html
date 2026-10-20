@@ -19,10 +19,9 @@
             <p>Smart, high-precision on-demand urban mobility, car rides, and express intercity airport transit tailored for Kampala, Entebbe, Jinja, and beyond.</p>
             <a class="home-helpline" href="tel:+256800100200"><i class="bx bx-phone" aria-hidden="true"></i> &nbsp;24/7 Safety Helpline: <strong>+256 800 100 200</strong></a>
         </div>
-        <div class="home-footer-column"><strong>Ride Categories</strong><a href="#fleet">EasyGo Sedan</a><a href="#fleet">EasyGo Saver</a><a href="#fleet">Comfort AC</a><a href="#fleet">Easy XL (6-Seater)</a><a href="#fleet">Executive Black</a></div>
-        <div class="home-footer-column"><strong>Partners &amp; Drivers</strong><a href="{% url 'register' %}">Driver Sign-Up</a><a href="#driver-opportunity">Driver Partner Program</a><a href="#driver-opportunity">Fleet Management</a><a href="#driver-opportunity">Fuel Card Rewards</a><a href="#driver-opportunity">Partner Web Portal</a></div>
-        <div class="home-footer-column"><strong>Company &amp; Trust</strong><a href="#safety">About Us</a><a href="#safety">Safety Guidelines</a><a href="#business">Easy Rides for Business</a><a href="#business">Careers in Uganda</a><a href="#routes">Newsroom</a></div>
-        <div class="home-footer-column home-footer-app"><strong>Get the Mobile App</strong><a class="home-store-button" href="#app-download"><i class="bx bxl-apple" aria-hidden="true"></i><span><small>DOWNLOAD ON</small>Apple App Store</span></a><a class="home-store-button" href="#app-download"><i class="bx bxl-play-store" aria-hidden="true"></i><span><small>GET IT ON</small>Google Play</span></a></div>
+        <div class="home-footer-column"><strong>Ride Services</strong><a href="#ride-booking">Request a ride</a><a href="#routes">Popular routes &amp; fares</a><a href="#safety">Safety features</a></div>
+        <div class="home-footer-column"><strong>For Drivers</strong><a href="#driver-opportunity">Driver earnings</a><a href="{% url 'register' %}?role=driver">Become a driver</a><a href="{% url 'login' %}">Driver sign in</a></div>
+        <div class="home-footer-column"><strong>Your Account</strong><a href="{% url 'auth' %}">Choose account type</a><a href="{% url 'login' %}">Sign in</a><a href="{% url 'register' %}">Create an account</a></div>
     </div>
     <div class="home-container home-footer-bottom">
         <div class="home-social-links" aria-label="Social links"><a href="#social" aria-label="Website"><i class="bx bx-globe" aria-hidden="true"></i></a><a href="#social" aria-label="Community"><i class="bx bx-envelope" aria-hidden="true"></i></a><a href="#social" aria-label="Share"><i class="bx bx-share-alt" aria-hidden="true"></i></a></div>
@@ -34,53 +33,193 @@
 
 {% block page_scripts %}
 <script>
-    const rideModes = document.querySelectorAll('[data-ride-mode]');
-    const rideModeInput = document.getElementById('ride-mode');
     const quoteMessage = document.getElementById('quote-message');
-    const vehicleName = document.getElementById('selected-vehicle-name');
-    const vehiclePrice = document.getElementById('selected-vehicle-price');
-    const vehicleEta = document.getElementById('selected-vehicle-eta');
+    let locationsRequest;
+    let locationsErrorShown = false;
 
-    rideModes.forEach((mode) => mode.addEventListener('click', () => {
-        rideModes.forEach((item) => {
-            item.classList.toggle('is-active', item === mode);
-            item.setAttribute('aria-selected', String(item === mode));
-        });
-        rideModeInput.value = mode.dataset.rideMode;
-    }));
+    const getLocations = () => {
+        if (!locationsRequest) {
+            locationsRequest = fetch('/api/locations/', {headers: {Accept: 'application/json'}})
+                .then((response) => {
+                    if (!response.ok) throw new Error('Could not load locations.');
+                    return response.json();
+                })
+                .then((payload) => {
+                    const locations = Array.isArray(payload) ? payload : payload.results;
+                    if (!Array.isArray(locations)) throw new Error('Unexpected locations response.');
+                    locationsErrorShown = false;
+                    return locations;
+                })
+                .catch((error) => {
+                    locationsRequest = null;
+                    throw error;
+                });
+        }
+        return locationsRequest;
+    };
 
-    document.querySelectorAll('[data-vehicle]').forEach((vehicle) => vehicle.addEventListener('click', () => {
-        const vehicleId = vehicle.dataset.vehicle;
-        document.querySelectorAll('.ride-category-list [data-vehicle]').forEach((item) => {
-            item.classList.toggle('is-active', item.dataset.vehicle === vehicleId);
+    document.querySelectorAll('[data-location-autocomplete]').forEach((wrapper) => {
+        const input = wrapper.querySelector('[data-location-input]');
+        const list = wrapper.querySelector('[data-location-list]');
+        const status = wrapper.querySelector('[data-location-status]');
+        let matchingLocations = [];
+        let activeIndex = -1;
+        let renderSequence = 0;
+
+        const clearSelection = () => {
+            delete input.dataset.locationId;
+            delete input.dataset.locationName;
+            delete input.dataset.lat;
+            delete input.dataset.long;
+        };
+
+        const closeList = () => {
+            renderSequence += 1;
+            list.hidden = true;
+            input.setAttribute('aria-expanded', 'false');
+            input.removeAttribute('aria-activedescendant');
+            wrapper.classList.remove('is-suggestions-open');
+            activeIndex = -1;
+        };
+
+        const setActiveOption = (index) => {
+            activeIndex = index;
+            const options = list.querySelectorAll('[role="option"]:not([aria-disabled="true"])');
+            options.forEach((option, optionIndex) => {
+                const isActive = optionIndex === activeIndex;
+                option.setAttribute('aria-selected', String(isActive));
+                if (isActive) {
+                    input.setAttribute('aria-activedescendant', option.id);
+                    option.scrollIntoView({block: 'nearest'});
+                }
+            });
+        };
+
+        const selectLocation = (location) => {
+            input.value = location.name;
+            input.dataset.locationId = location.id;
+            input.dataset.locationName = location.name;
+            input.dataset.lat = location.lat;
+            input.dataset.long = location.long;
+            status.textContent = `${location.name} selected.`;
+            closeList();
+            input.dispatchEvent(new CustomEvent('location:selected', {bubbles: true, detail: location}));
+        };
+
+        const renderSuggestions = async () => {
+            const sequence = ++renderSequence;
+            let locations;
+            try {
+                locations = await getLocations();
+            } catch {
+                if (sequence !== renderSequence) return [];
+                status.textContent = 'Locations could not be loaded. Try again.';
+                if (!locationsErrorShown && window.showSnackbar) {
+                    window.showSnackbar({type: 'error', title: 'Locations unavailable', message: 'Could not load location suggestions. Try again.'});
+                    locationsErrorShown = true;
+                }
+                closeList();
+                return [];
+            }
+            if (sequence !== renderSequence) return [];
+
+            const query = input.value.trim().toLocaleLowerCase();
+            matchingLocations = locations
+                .filter((location) => location.name && location.name.toLocaleLowerCase().includes(query))
+                .slice(0, 8);
+            list.replaceChildren();
+            activeIndex = -1;
+
+            if (matchingLocations.length === 0) {
+                const emptyOption = document.createElement('div');
+                emptyOption.className = 'location-suggestion-empty';
+                emptyOption.setAttribute('role', 'option');
+                emptyOption.setAttribute('aria-disabled', 'true');
+                emptyOption.textContent = query ? 'No matching locations' : 'No locations available';
+                list.append(emptyOption);
+                status.textContent = emptyOption.textContent;
+            } else {
+                matchingLocations.forEach((location, index) => {
+                    const option = document.createElement('button');
+                    const icon = document.createElement('i');
+                    const name = document.createElement('span');
+                    option.type = 'button';
+                    option.id = `${list.id}-option-${index}`;
+                    option.className = 'location-suggestion';
+                    option.setAttribute('role', 'option');
+                    option.setAttribute('aria-selected', 'false');
+                    option.addEventListener('pointerdown', (event) => event.preventDefault());
+                    option.addEventListener('click', () => selectLocation(location));
+                    option.addEventListener('pointerenter', () => setActiveOption(index));
+                    icon.className = 'bx bx-map-pin';
+                    icon.setAttribute('aria-hidden', 'true');
+                    name.className = 'location-suggestion__name';
+                    name.textContent = location.name;
+                    option.append(icon, name);
+                    list.append(option);
+                });
+                status.textContent = `${matchingLocations.length} location suggestions available.`;
+            }
+
+            list.hidden = false;
+            input.setAttribute('aria-expanded', 'true');
+            wrapper.classList.add('is-suggestions-open');
+            return matchingLocations;
+        };
+
+        input.addEventListener('focus', renderSuggestions);
+        input.addEventListener('input', () => {
+            if (input.value !== input.dataset.locationName) clearSelection();
+            renderSuggestions();
         });
-        document.querySelectorAll('[data-fleet-card]').forEach((card) => {
-            card.classList.toggle('is-selected', card.dataset.fleetCard === vehicleId);
+        input.addEventListener('keydown', async (event) => {
+            if (event.key === 'Escape') {
+                closeList();
+                return;
+            }
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                const locations = list.hidden ? await renderSuggestions() : matchingLocations;
+                if (locations.length) {
+                    const direction = event.key === 'ArrowDown' ? 1 : -1;
+                    const nextIndex = activeIndex + direction;
+                    setActiveOption((nextIndex + locations.length) % locations.length);
+                }
+            }
+            if (event.key === 'Enter' && !list.hidden && matchingLocations.length) {
+                event.preventDefault();
+                selectLocation(matchingLocations[activeIndex < 0 ? 0 : activeIndex]);
+            }
         });
-        vehicleName.textContent = vehicle.dataset.vehicleName;
-        vehiclePrice.textContent = vehicle.dataset.vehiclePrice;
-        vehicleEta.textContent = vehicle.dataset.vehicleEta;
-        document.getElementById('selected-vehicle-description').textContent = vehicle.dataset.vehicleDescription;
-        document.getElementById('selected-vehicle-seats').textContent = vehicle.dataset.vehicleSeats;
-        quoteMessage.textContent = `${vehicle.dataset.vehicleName} selected.`;
-    }));
+        input.addEventListener('blur', () => window.setTimeout(() => {
+            if (!wrapper.contains(document.activeElement)) closeList();
+        }, 120));
+    });
 
     document.querySelectorAll('[data-clear-field]').forEach((button) => button.addEventListener('click', () => {
         const input = document.getElementById(button.dataset.clearField);
         input.value = '';
+        delete input.dataset.locationId;
+        delete input.dataset.locationName;
+        delete input.dataset.lat;
+        delete input.dataset.long;
         input.focus();
+        input.dispatchEvent(new Event('input', {bubbles: true}));
     }));
 
     document.getElementById('quote-button').addEventListener('click', () => {
         const pickup = document.getElementById('pickup-location').value.trim();
         const dropoff = document.getElementById('dropoff-location').value.trim();
-        if (!pickup || !dropoff) {
-            quoteMessage.textContent = 'Enter both pickup and destination to see available rides.';
+        const pickupInput = document.getElementById('pickup-location');
+        const dropoffInput = document.getElementById('dropoff-location');
+        if (!pickupInput.dataset.locationId || !dropoffInput.dataset.locationId) {
+            quoteMessage.textContent = 'Choose a pickup and destination from the location suggestions.';
+            if (window.showSnackbar) {
+                window.showSnackbar({type: 'info', title: 'Choose both locations', message: 'Select a pickup and destination from the suggestions.'});
+            }
             return;
         }
-        const modeName = rideModeInput.value === 'delivery' ? 'delivery' : 'ride';
-        quoteMessage.textContent = `Showing ${vehicleName.textContent} ${modeName} options from ${pickup} to ${dropoff}.`;
-        document.getElementById('fleet').scrollIntoView({behavior: 'smooth', block: 'start'});
+        quoteMessage.textContent = `Ready to request a ride from ${pickup} to ${dropoff}.`;
     });
 
     const hoursSlider = document.getElementById('driver-hours');

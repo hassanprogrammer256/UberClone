@@ -33,7 +33,7 @@ INSTALLED_APPS = [
 # THIRD_PARTY_APPS 
 'crispy_forms','crispy_bootstrap4','rest_framework',
 # LOCAL_APPS
-    'accounts','manager'
+    'accounts','manager','api'
 ]
 
 MIDDLEWARE = [

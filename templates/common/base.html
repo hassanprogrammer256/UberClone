@@ -7,7 +7,7 @@
     <title>{% block title %}Easy Rides{% endblock %}</title>
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
 <div class="uber-page">
     {% block site_header %}{% include "common/header.html" %}{% endblock %}
     <main class="uber-main">
