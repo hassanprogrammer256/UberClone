@@ -17,8 +17,8 @@ SECRET_KEY = 'django-insecure-=38qjf4f+3%nh54awz%dxd3c^p1umm&u-cbq%2b1!(xq-xep55
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
 
+ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1']
 
 # Application definition
 
@@ -65,7 +65,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4'  # or 'bootstrap4', 'bootstrap5', etc. depending on your preference
+CRISPY_TEMPLATE_PACK = 'bootstrap4' 
 
 DATABASES = {
     'default': {
@@ -148,3 +148,9 @@ AUTHENTICATION_BACKENDS = ['accounts.backends.EmailOrPhoneBackend']
 AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGOUT_REDIRECT_URL = 'index'
 LOGIN_REDIRECT_URL = 'index'
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
