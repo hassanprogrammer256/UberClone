@@ -4,63 +4,26 @@
 
 {% block content %}
 <section class="dashboard" id="overview" aria-labelledby="dashboard-title">
-	<div class="dashboard-heading">
-		<div>
-			<p class="eyebrow">Operations command / Kampala regional node 01</p>
-			<div class="title-line"><h1 id="dashboard-title">Executive Telemetry</h1><span class="feed-status"><i></i> Real-time feed</span></div>
-		</div>
-		<div class="dashboard-actions">
-			<div class="period-switch" role="group" aria-label="Reporting period">
-				<button class="is-selected" type="button" aria-pressed="true">Today</button>
-				<button type="button" aria-pressed="false">7 Days</button>
-				<button type="button" aria-pressed="false">30 Days</button>
-			</div>
-			<button class="export-button" type="button"><i class="bx bx-download" aria-hidden="true"></i> Export Audit</button>
-		</div>
-	</div>
 
 	<section class="metrics-grid" aria-label="Today's performance">
-		{% include "components/administrator/metric_card.html" with metric_id="revenue" metric_label="Gross revenue" metric_icon="bxs-wallet" metric_value="UGX 482.5M" metric_note_class="positive" metric_note_icon="bx-trending-up" metric_note="+14.2% MoM" metric_note_detail="vs target" only %}
-		{% include "components/administrator/metric_card.html" with metric_label="Active trips" metric_icon="bx-car" metric_icon_class="metric-icon--blue" metric_value="342" metric_note_bold="91%" metric_note="Kampala Urban Corridor" only %}
-		{% include "components/administrator/metric_card.html" with metric_id="drivers" metric_label="Online drivers" metric_icon="bx-group" metric_value="1,240" metric_note_class="positive" metric_note_bold="89%" metric_note="fleet utilization rate" only %}
-		{% include "components/administrator/metric_card.html" with metric_label="Completed today" metric_icon="bx-check-circle" metric_value="4,890" metric_note_class="positive" metric_note_icon="bx-trending-up" metric_note="+6.8% vs last week" only %}
+		{% include "components/administrator/metric_card.html" with metric_label="Active accounts" metric_icon="bx-group" metric_value=active_accounts metric_note="Across all account roles" only %}
+		{% include "components/administrator/metric_card.html" with metric_label="Customer accounts" metric_icon="bx-user" metric_value=customer_accounts metric_note="Active customers" only %}
+		{% include "components/administrator/metric_card.html" with metric_label="Driver accounts" metric_icon="bx-car" metric_icon_class="metric-icon--blue" metric_value=driver_accounts metric_note="Active drivers" only %}
+		{% include "components/administrator/metric_card.html" with metric_label="Service locations" metric_icon="bx-map" metric_value=location_count metric_note="Locations in the database" only %}
 	</section>
 
 	<div class="analytics-grid">
-		<section class="panel trends-panel" aria-labelledby="trends-title">
-			{% include "components/administrator/panel_heading.html" with heading_id="trends-title" heading="Trips & Revenue Dynamics" subheading="Intra-city volume distribution across major Uganda arterial routes" only %}
-			<div class="chart-legend" aria-label="Chart legend">
-				<span><i class="legend-dot legend-dot--black"></i>Kampala Metropolitan</span>
-				<span><i class="legend-dot legend-dot--blue"></i>Entebbe Express</span>
-				<span><i class="legend-dot legend-dot--muted"></i>Jinja Corridor</span>
+		<section class="panel chart-panel" aria-labelledby="accounts-chart-title">
+			{% include "components/administrator/panel_heading.html" with heading_id="accounts-chart-title" heading="Active Accounts by Role" subheading="Active user accounts currently stored in the database" only %}
+			<div class="chart-wrap chart-wrap--doughnut">
+				<canvas id="accounts-chart" role="img" aria-label="Active accounts by customer, driver, and admin role"></canvas>
 			</div>
-			<div class="chart-wrap">
-				<svg class="trends-chart" viewBox="0 0 640 300" role="img" aria-labelledby="chart-title chart-desc" preserveAspectRatio="none">
-					<title id="chart-title">Trips by route throughout the day</title>
-					<desc id="chart-desc">Kampala Metropolitan leads, peaking at 642 trips per hour at 18:00.</desc>
-					<defs><linearGradient id="trend-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#151515" stop-opacity=".2"/><stop offset="1" stop-color="#151515" stop-opacity="0"/></linearGradient></defs>
-					<path class="chart-area" d="M0 152 L64 122 L128 146 L192 94 L256 108 L320 68 L384 62 L448 44 L512 74 L576 38 L640 20 L640 270 L0 270 Z"/>
-					<path class="chart-gridline" d="M0 65H640 M0 138H640 M0 211H640 M0 270H640"/>
-					<path class="chart-line chart-line--black" d="M0 152 L64 122 L128 146 L192 94 L256 108 L320 68 L384 62 L448 44 L512 74 L576 38 L640 20"/>
-					<path class="chart-line chart-line--blue" d="M0 230 L64 216 L128 193 L192 163 L256 202 L320 153 L384 132 L448 115 L512 129 L576 96 L640 88"/>
-					<path class="chart-line chart-line--muted" d="M0 274 L64 263 L128 252 L192 244 L256 255 L320 235 L384 225 L448 215 L512 202 L576 190 L640 181"/>
-					<path class="chart-marker-line" d="M448 38V270"/><circle class="chart-marker" cx="448" cy="44" r="6"/>
-				</svg>
-				<div class="chart-tooltip"><span>18:00 Peak Rush</span><strong>642 Trips / hr</strong><b>UGX 18.4M Gross</b></div>
-			</div>
-			<div class="chart-times" aria-hidden="true"><span>06:00</span><span>08:00</span><span>10:00</span><span>12:00</span><span>14:00</span><span>16:00</span><strong>18:00</strong><span>20:00</span><span>22:00</span><span>00:00</span><span>02:00</span></div>
 		</section>
 
-		<section class="panel fleet-panel" aria-labelledby="fleet-mix-title">
-			<div class="panel-heading"><div><h2 id="fleet-mix-title">Fleet Category Mix</h2><p>Car classification volume</p></div><span class="total-pill">100% Cars</span></div>
-			<div class="fleet-content">
-				<div class="donut-chart" role="img" aria-label="Fleet mix: EasyGo 44%, Easy Comfort 31%, Easy XL 15%, Executive 10%"><div><small>Total</small><strong>1.2K</strong></div></div>
-				<ul class="fleet-legend">
-					<li><i class="legend-swatch swatch--black"></i><span>EasyGo<small>(Premio/Fielder)</small></span><b>44%</b></li>
-					<li><i class="legend-swatch swatch--blue"></i><span>Easy Comfort<small>(Axio/Sienta)</small></span><b>31%</b></li>
-					<li><i class="legend-swatch swatch--grey"></i><span>Easy XL<small>(Toyota Noah)</small></span><b>15%</b></li>
-					<li><i class="legend-swatch swatch--pale"></i><span>Executive<small>(Mercedes E/C)</small></span><b>10%</b></li>
-				</ul>
+		<section class="panel chart-panel" aria-labelledby="locations-chart-title">
+			{% include "components/administrator/panel_heading.html" with heading_id="locations-chart-title" heading="Location Coverage" subheading="Database locations by longitude and latitude" only %}
+			<div class="chart-wrap chart-wrap--scatter">
+				<canvas id="locations-chart" role="img" aria-label="Map coordinate scatter plot of service locations"></canvas>
 			</div>
 		</section>
 	</div>
@@ -102,4 +65,72 @@
 		<div class="table-footer"><span>Displaying 4 of 342 real-time active dispatch logs</span><nav class="pagination" aria-label="Trip pages"><button type="button">Previous</button><button class="is-current" type="button" aria-current="page">1</button><button type="button">2</button><button type="button">Next</button></nav></div>
 	</section>
 </section>
+{% endblock %}
+
+{% block page_scripts %}
+{{ role_chart_data|json_script:"role-chart-data" }}
+{{ location_chart_data|json_script:"location-chart-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script>
+	const roleChartData = JSON.parse(document.getElementById('role-chart-data').textContent);
+	const locationChartData = JSON.parse(document.getElementById('location-chart-data').textContent);
+	const chartFont = 'Inter, Segoe UI, sans-serif';
+
+	Chart.defaults.font.family = chartFont;
+	Chart.defaults.color = '#615e68';
+
+	new Chart(document.getElementById('accounts-chart'), {
+		type: 'doughnut',
+		data: {
+			labels: roleChartData.labels,
+			datasets: [{
+				data: roleChartData.values,
+				backgroundColor: ['#050505', '#276ef1', '#078c4b'],
+				borderWidth: 0,
+				hoverOffset: 5,
+			}],
+		},
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+			cutout: '68%',
+			plugins: {
+				legend: {position: 'bottom', labels: {usePointStyle: true, padding: 18}},
+				tooltip: {callbacks: {label: (context) => `${context.label}: ${context.raw}`}},
+			},
+		},
+	});
+
+	new Chart(document.getElementById('locations-chart'), {
+		type: 'scatter',
+		data: {
+			datasets: [{
+				label: 'Service locations',
+				data: locationChartData.map((location) => ({x: location.long, y: location.lat, name: location.name})),
+				backgroundColor: '#276ef1',
+				borderColor: '#fff',
+				borderWidth: 1,
+				pointRadius: 4,
+				pointHoverRadius: 6,
+			}],
+		},
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+			plugins: {
+				legend: {display: false},
+				tooltip: {
+					callbacks: {
+						title: (items) => items[0]?.raw.name || 'Location',
+						label: (context) => `Lat ${context.raw.y.toFixed(4)}, Long ${context.raw.x.toFixed(4)}`,
+					},
+				},
+			},
+			scales: {
+				x: {title: {display: true, text: 'Longitude'}, grid: {color: '#ececf2'}},
+				y: {title: {display: true, text: 'Latitude'}, grid: {color: '#ececf2'}},
+			},
+		},
+	});
+</script>
 {% endblock %}

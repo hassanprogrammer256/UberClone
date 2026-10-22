@@ -22,11 +22,7 @@
 				<img src="{% static 'images/logo.png' %}" alt="">
 				<span><strong>Easy Rides</strong><small>UGANDA</small></span>
 			</a>
-			<div class="command-status">
-				<div class="command-status__top"><span>Command centre</span><i aria-label="System online"></i></div>
-				<strong><i class="bx bx-map-pin" aria-hidden="true"></i> Live · Kampala</strong>
-				<small>GMT+3</small>
-			</div>
+
 			<nav class="admin-nav" aria-label="Main navigation">
 				<a class="is-active" href="#overview" aria-current="page"><i class="bx bxs-dashboard" aria-hidden="true"></i><span>Overview / Analytics</span></a>
 				<a href="#fleet"><i class="bx bx-map-alt" aria-hidden="true"></i><span>Live Fleet &amp; Dispatch</span></a>
@@ -43,7 +39,7 @@
 					<a href="#home">Easy Rides</a><i class="bx bx-chevron-right" aria-hidden="true"></i><a href="#admin">Admin Portal</a><i class="bx bx-chevron-right" aria-hidden="true"></i><strong>Kampala Central Hub</strong>
 				</nav>
 				<div class="topbar-actions">
-					<span class="clock-pill"><b aria-hidden="true"><i class="bx bx-time-five"></i></b><span>Kampala GMT: 14:42</span><i></i><strong>Online</strong></span>
+					
 					<button class="icon-button notification-button" type="button" aria-label="Notifications"><span class="bx bx-bell" aria-hidden="true"></span><i></i></button>
 					<form action="{% url 'logout' %}" method="post" style="display: inline;">
     {% csrf_token %}
