@@ -4,7 +4,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>{% block title %}Easy Rides Admin{% endblock %}</title>
+	<title>{% block title %}Easy Rides Portal{% endblock %}</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,23 +24,34 @@
 			</a>
 
 			<nav class="admin-nav" aria-label="Main navigation">
-				<a class="is-active" href="#overview" aria-current="page"><i class="bx bxs-dashboard" aria-hidden="true"></i><span>Overview / Analytics</span></a>
-				<a href="#fleet"><i class="bx bx-map-alt" aria-hidden="true"></i><span>Live Fleet &amp; Dispatch</span></a>
-				<a href="#drivers"><i class="bx bx-group" aria-hidden="true"></i><span>Drivers &amp; Partners</span></a>
+				{%for item in side_nav%}
+				<a  href={{item.to}} ><i class= "{{item.icon_class}}" aria-hidden="true"></i><span>{{item.label}}</span></a>
+				{%endfor%}
+
+				{% comment %} <a href="#fleet"><i class="bx bx-group" aria-hidden="true"></i><span>Customers</span></a>
+				<a href="#drivers"><i class="bx bx-steering-wheel" aria-hidden="true"></i><span>Drivers</span></a>
 				<a href="#trips"><i class="bx bx-car" aria-hidden="true"></i><span>Rides &amp; Trips</span></a>
-				<a href="#revenue"><i class="bx bx-wallet" aria-hidden="true"></i><span>Earnings &amp; Payouts</span></a>
-				<a href="#settings"><i class="bx bx-cog" aria-hidden="true"></i><span>Settings</span></a>
+				<a href="#revenue"><i class="bx bx-wallet" aria-hidden="true"></i><span>Earnings &amp; Payouts</span></a> {% endcomment %}
+			
 			</nav>
-			<div class="sidebar-profile admin-profile"><span class="profile-avatar" aria-hidden="true"><i class="bx bxs-user"></i></span><span><strong>Admin Lead</strong><small>admin@easy-rides.ug</small></span></div>
+			<div class="sidebar-profile admin-profile"><span class="profile-avatar" aria-hidden="true"><i class="bx bxs-user"></i>
+				{%if role == 'admin'%}
+			</span><span><strong>System Admin</strong><small>admin@easy-rides.ug</small></span>
+			{%elif role == 'customer'%}
+			</span><span><strong>Customer Portal</strong><small>customer Email</small></span>
+			{%else%}
+			</span><span><strong>Anonymous</strong><small>Unknown User</small></span>
+			{%endif%}
+		</div>
 		</aside>
 		<div class="admin-workspace">
 			<header class="admin-topbar">
 				<nav class="breadcrumbs" aria-label="Breadcrumb">
-					<a href="#home">Easy Rides</a><i class="bx bx-chevron-right" aria-hidden="true"></i><a href="#admin">Admin Portal</a><i class="bx bx-chevron-right" aria-hidden="true"></i><strong>Kampala Central Hub</strong>
+					<a href="#home">Easy Rides</a><i class="bx bx-chevron-right" aria-hidden="true"></i><a href="#admin">Admin Portal</a><i class="bx bx-chevron-right" aria-hidden="true"></i><strong>{{tab}}</strong>
 				</nav>
 				<div class="topbar-actions">
 					
-					<button class="icon-button notification-button" type="button" aria-label="Notifications"><span class="bx bx-bell" aria-hidden="true"></span><i></i></button>
+					{% comment %} <button class="icon-button notification-button" type="button" aria-label="Notifications"><span class="bx bx-bell" aria-hidden="true"></span><i></i></button> {% endcomment %}
 					<form action="{% url 'logout' %}" method="post" style="display: inline;">
     {% csrf_token %}
     <button class="logout-button" type="submit">

@@ -1,75 +1,61 @@
 {% extends "administrator/layout.html" %}
 
-{% block title %}Executive Telemetry | Easy Rides Admin{% endblock %}
+{% block title %}Easy Rides Admin{% endblock %}
 
 {% block content %}
 <section class="dashboard" id="overview" aria-labelledby="dashboard-title">
 
 	<section class="metrics-grid" aria-label="Today's performance">
-		{% include "components/administrator/metric_card.html" with metric_label="Active accounts" metric_icon="bx-group" metric_value=active_accounts metric_note="Across all account roles" only %}
-		{% include "components/administrator/metric_card.html" with metric_label="Customer accounts" metric_icon="bx-user" metric_value=customer_accounts metric_note="Active customers" only %}
-		{% include "components/administrator/metric_card.html" with metric_label="Driver accounts" metric_icon="bx-car" metric_icon_class="metric-icon--blue" metric_value=driver_accounts metric_note="Active drivers" only %}
-		{% include "components/administrator/metric_card.html" with metric_label="Service locations" metric_icon="bx-map" metric_value=location_count metric_note="Locations in the database" only %}
+{% for metric in overview %}
+  {% include "components/administrator/metric_card.html" with metric_label=metric.label metric_value=metric.value metric_icon=metric.icon metric_note=metric.note only %}
+{% endfor %}
 	</section>
 
 	<div class="analytics-grid">
 		<section class="panel chart-panel" aria-labelledby="accounts-chart-title">
-			{% include "components/administrator/panel_heading.html" with heading_id="accounts-chart-title" heading="Active Accounts by Role" subheading="Active user accounts currently stored in the database" only %}
+			{% include "components/administrator/panel_heading.html" with heading_id="accounts-chart-title" heading="Users by Role" subheading="Active user accounts currently" only %}
 			<div class="chart-wrap chart-wrap--doughnut">
-				<canvas id="accounts-chart" role="img" aria-label="Active accounts by customer, driver, and admin role"></canvas>
+				<canvas id="primary-chart" role="chart" aria-label="Active accounts by customer, driver"></canvas>
 			</div>
 		</section>
 
-		<section class="panel chart-panel" aria-labelledby="locations-chart-title">
-			{% include "components/administrator/panel_heading.html" with heading_id="locations-chart-title" heading="Location Coverage" subheading="Database locations by longitude and latitude" only %}
+		<section class="panel chart-panel" aria-labelledby="secondary-chart-title">
+			{% include "components/administrator/panel_heading.html" with heading_id="secondary-chart-title" heading="Location Coverage" subheading="Database locations by longitude and latitude" only %}
 			<div class="chart-wrap chart-wrap--scatter">
-				<canvas id="locations-chart" role="img" aria-label="Map coordinate scatter plot of service locations"></canvas>
-			</div>
-		</section>
-	</div>
-
-	<div class="operations-grid" id="fleet">
-		<section class="surge-panel" aria-labelledby="surge-title">
-			<div class="surge-top"><span>Spatial density</span><span aria-hidden="true"><i class="bx bx-navigation"></i></span></div>
-			<h2 id="surge-title">Entebbe International Runway Demand</h2>
-			<p>Flight inbound: 4 heavy passenger flights arriving in the next 35 minutes. Pre-allocating 45 Executive &amp; Comfort Sedans to Entebbe Expressway Toll Plaza.</p>
-			<div class="surge-bottom"><div><span>Surge lock active</span><strong>1.35x</strong></div><button type="button">Dispatch Queue <b>(32)</b></button></div>
-		</section>
-
-		<section class="panel clusters-panel" aria-labelledby="clusters-title">
-			{% include "components/administrator/panel_heading.html" with heading_id="clusters-title" heading="Top Demand Clusters & Corridors" subheading="Live vehicle distribution efficiency" only %}
-			<div class="cluster-list">
-				{% include "components/administrator/demand_card.html" with cluster_name="Acacia - Kololo" vehicle_count="142" supply_label="Optimal (94%)" supply_percent="94" pickup_time="3.4 mins" only %}
-				{% include "components/administrator/demand_card.html" with cluster_name="Kampala CBD - Nakasero" vehicle_count="218" supply_label="High Demand" supply_percent="82" supply_class="supply-bar--blue" pickup_time="4.8 mins" only %}
-				{% include "components/administrator/demand_card.html" with cluster_name="Entebbe Expressway" vehicle_count="89" supply_label="Tight (56%)" supply_percent="56" supply_class="supply-bar--red" pickup_time="6.2 mins" only %}
+				<canvas id="secondary-chart" role="img" aria-label="Map coordinate scatter plot of service locations"></canvas>
 			</div>
 		</section>
 	</div>
 
 	<section class="panel trips-panel" id="trips" aria-labelledby="trips-title">
 		<div class="trips-heading">
-			<div><h2 id="trips-title">Live Ride Telemetry &amp; Bookings <i></i></h2><p>Continuous incoming dispatch orders across vetted car fleet</p></div>
+			<div><h2 id="trips-title">Recent Live Rides  &amp; Bookings <i></i></h2><p>Continuous incoming dispatch orders </p></div>
 			<div class="table-tools"><label class="search-field"><i class="bx bx-search" aria-hidden="true"></i><input type="search" placeholder="Search trip ID, driver, vehicle plate" aria-label="Search trips"></label><button class="icon-button filter-button" type="button" aria-label="Filter trips"><i class="bx bx-filter-alt" aria-hidden="true"></i></button></div>
 		</div>
 		<div class="table-scroll">
 			<table class="trips-table">
-				<thead><tr><th>Trip ID &amp; Class</th><th>Driver Partner</th><th>Vehicle Details</th><th>Route (From → To)</th><th>Gross Fare</th><th>Payment</th><th>Trip Status</th></tr></thead>
+				<thead><tr><th>Trip ID</th><th>Driver</th><th>Vehicle Details</th><th>Route (From → To)</th><th>Gross Fare</th><th>Payment</th><th>Trip Status</th></tr></thead>
 				<tbody>
-					{% include "components/administrator/trip_row.html" with trip_id="ER-94821" trip_class="Executive · Mercedes E-Class" driver_name="Samuel Kato" driver_rating="4.96" driver_trip_count="1,420" vehicle_name="Mercedes-Benz E250" vehicle_plate="UBK 492T" route_from="Acacia Mall, Kisementi" route_to="Entebbe International Airport (EBB)" trip_fare="UGX 125,000" fare_note="1.2x Peak Surge" payment_method="MTN MoMo" trip_status="In Progress" trip_status_class="status-pill--progress" only %}
-					{% include "components/administrator/trip_row.html" with trip_id="ER-94819" trip_class="Easy Comfort · Toyota Axio" driver_name="Brenda Namubiru" driver_rating="4.92" driver_trip_count="840" vehicle_name="Toyota Axio 2018" vehicle_plate="UBH 311X" route_from="Nakasero Business Tower" route_to="Speke Resort Munyonyo" trip_fare="UGX 42,000" fare_note="Standard Rate" payment_method="Airtel Money" trip_status="Completed" trip_status_class="status-pill--complete" only %}
-					{% include "components/administrator/trip_row.html" with trip_id="ER-94814" trip_class="Easy XL · Toyota Noah" driver_name="David Mugisha" driver_rating="4.88" driver_trip_count="2,105" vehicle_name="Toyota Noah 7-Seater" vehicle_plate="UBM 702P" route_from="Makerere Main Gate" route_to="Ntinda Complex" trip_fare="UGX 38,500" fare_note="Flat XL" payment_method="MTN MoMo" trip_status="Dispatched (3m away)" trip_status_class="status-pill--dispatched" only %}
-					{% include "components/administrator/trip_row.html" with trip_id="ER-94808" trip_class="EasyGo · Toyota Premio" driver_name="Joseph Ochen" driver_rating="4.98" driver_trip_count="610" vehicle_name="Toyota Premio 2012" vehicle_plate="UAJ 985K" route_from="Lugogo Mall (Shoprite)" route_to="Bugolobi Village Market" trip_fare="UGX 16,000" fare_note="Off-peak Promo" payment_method="Easy Wallet" trip_status="Completed" trip_status_class="status-pill--complete" only %}
+					{% include "components/administrator/trip_row.html" with trip_id="ER-94821" driver_name="Samuel Kato" driver_rating="4.96" driver_trip_count="1,420" vehicle_name="Mercedes-Benz E250" vehicle_plate="UBK 492T" route_from="Acacia Mall, Kisementi" route_to="Entebbe International Airport (EBB)" trip_fare="UGX 125,000"  payment_method="MTN MoMo" trip_status="In Progress" trip_status_class="status-pill--progress" only %}
+					{% include "components/administrator/trip_row.html" with trip_id="ER-94819" driver_name="Brenda Namubiru" driver_rating="4.92" driver_trip_count="840" vehicle_name="Toyota Axio 2018" vehicle_plate="UBH 311X" route_from="Nakasero Business Tower" route_to="Speke Resort Munyonyo" trip_fare="UGX 42,000" payment_method="Airtel Money" trip_status="Completed" trip_status_class="status-pill--complete" only %}
+					{% include "components/administrator/trip_row.html" with trip_id="ER-94814" driver_name="David Mugisha" driver_rating="4.88" driver_trip_count="2,105" vehicle_name="Toyota Noah 7-Seater" vehicle_plate="UBM 702P" route_from="Makerere Main Gate" route_to="Ntinda Complex" trip_fare="UGX 38,500"  payment_method="MTN MoMo" trip_status="Dispatched (3m away)" trip_status_class="status-pill--dispatched" only %}
+					{% include "components/administrator/trip_row.html" with trip_id="ER-94808" driver_name="Joseph Ochen" driver_rating="4.98" driver_trip_count="610" vehicle_name="Toyota Premio 2012" vehicle_plate="UAJ 985K" route_from="Lugogo Mall (Shoprite)" route_to="Bugolobi Village Market" trip_fare="UGX 16,000"  payment_method="Easy Wallet" trip_status="Completed" trip_status_class="status-pill--complete" only %}
 				</tbody>
 			</table>
 		</div>
-		<div class="table-footer"><span>Displaying 4 of 342 real-time active dispatch logs</span><nav class="pagination" aria-label="Trip pages"><button type="button">Previous</button><button class="is-current" type="button" aria-current="page">1</button><button type="button">2</button><button type="button">Next</button></nav></div>
+		<div class="table-footer"><span>Displaying 4 of 342 real-time active dispatch logs</span><nav class="pagination" aria-label="Trip pages"><button class="is-current" type="button" aria-current="page">View All</button></nav></div>
 	</section>
 </section>
 {% endblock %}
 
 {% block page_scripts %}
-{{ role_chart_data|json_script:"role-chart-data" }}
-{{ location_chart_data|json_script:"location-chart-data" }}
+{% for chart in charts %}
+    {% if chart.type == 'role_chart_data' %}
+        {{ chart|json_script:"role-chart-data" }}
+    {% elif chart.type == 'location_data' %}
+        {{ chart.values|json_script:"location-chart-data" }}
+    {% endif %}
+{% endfor %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 <script>
 	const roleChartData = JSON.parse(document.getElementById('role-chart-data').textContent);
@@ -79,13 +65,13 @@
 	Chart.defaults.font.family = chartFont;
 	Chart.defaults.color = '#615e68';
 
-	new Chart(document.getElementById('accounts-chart'), {
+	new Chart(document.getElementById('primary-chart'), {
 		type: 'doughnut',
 		data: {
 			labels: roleChartData.labels,
 			datasets: [{
 				data: roleChartData.values,
-				backgroundColor: ['#050505', '#276ef1', '#078c4b'],
+				backgroundColor: ['#050505', '#276ef1'],
 				borderWidth: 0,
 				hoverOffset: 5,
 			}],
@@ -101,7 +87,7 @@
 		},
 	});
 
-	new Chart(document.getElementById('locations-chart'), {
+	new Chart(document.getElementById('secondary-chart'), {
 		type: 'scatter',
 		data: {
 			datasets: [{
@@ -133,4 +119,5 @@
 		},
 	});
 </script>
+
 {% endblock %}

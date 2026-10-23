@@ -4,7 +4,7 @@ from django.shortcuts import render
 from api.models import Location
 
 
-def manager_dashboard(request):
+def dashboard(request):
     user_model = get_user_model()
     role_counts = {
         item['role']: item['total']
@@ -29,19 +29,26 @@ def manager_dashboard(request):
         })
 
     context = {
-        'active_accounts': sum(role_counts.values()),
-        'customer_accounts': role_counts.get('customer', 0),
-        'driver_accounts': role_counts.get('driver', 0),
-        'admin_accounts': role_counts.get('admin', 0),
-        'location_count': Location.objects.count(),
-        'role_chart_data': {
-            'labels': ['Customers', 'Drivers', 'Admins'],
-            'values': [
-                role_counts.get('customer', 0),
-                role_counts.get('driver', 0),
-                role_counts.get('admin', 0),
-            ],
-        },
-        'location_chart_data': location_points,
+        'tab':      'Dashboard',
+        'title':    "Easy Rides Admin",
+        'role': request.user.role,
+        'side_nav': [
+                        {"to": " ", "icon_class": "bx bx-dashboard", "label": "Dashboard"}
+                    ],
+        'overview': [
+                        { "label" : 'Customers', "value" : role_counts.get('customer', 0)},
+                        {"label" : 'drivers', "value" : role_counts.get('driver', 0)},
+                        {"label" : 'locations', "value" : Location.objects.count()}
+                    ],
+       
+        'charts':   [
+                    {'type': 'role_chart_data', 'labels': ['Customers', 'Drivers'],'values': [
+                                    role_counts.get('customer', 0),
+                                    role_counts.get('driver', 0)
+                                ]},
+                    {'type': 'location_data', 'values': location_points}
+        ]
+
+       
     }
     return render(request, 'administrator/index.html', context)

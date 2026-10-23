@@ -3,14 +3,59 @@ from django.views.generic import TemplateView
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login,authenticate
 from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils.http import url_has_allowed_host_and_scheme
+from accounts.forms import RegistrationForm
+from accounts.models import CustomerProfile, DriverProfile
 
 def auth_view(request):
     return render(request, 'auth/auth.html')
 
 
 def RegisterView(request):
-    return render(request, 'auth/register.html')
+    role = request.GET.get('role') or request.POST.get('role') or 'customer'
+    if role not in {'customer', 'driver'}:
+        role = 'customer'
+
+    post_data = request.POST.copy() if request.method == 'POST' else None
+    if post_data is not None:
+        post_data['role'] = role
+    form = RegistrationForm(
+        data=post_data,
+        files=request.FILES or None,
+        initial={'role': role},
+        role=role,
+    )
+    if request.method == 'POST' and form.is_valid():
+        with transaction.atomic():
+            user = get_user_model().objects.create_user(
+                phone_number=form.cleaned_data['phone_number'],
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password'],
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name'],
+                role=form.cleaned_data['role'],
+                image=form.cleaned_data.get('image'),
+            )
+            if user.role == 'driver':
+                DriverProfile.objects.create(
+                    user=user,
+                    date_of_birth=form.cleaned_data['date_of_birth'],
+                    address=form.cleaned_data['location'].name,
+                )
+            else:
+                CustomerProfile.objects.create(
+                    user=user,
+                    address=form.cleaned_data['location'].name,
+                )
+        messages.success(request, 'Your account has been created. You can now sign in.')
+        return redirect('login')
+    if request.method == 'POST':
+        error_text = form.errors.as_text()
+        print(f'Registration validation failed (role={role}):\n{error_text}')
+        messages.error(request, 'Please correct the highlighted errors and try again.')
+    return render(request, 'auth/register.html', {'form': form, 'role': role})
 
 
 class LoginView(TemplateView):

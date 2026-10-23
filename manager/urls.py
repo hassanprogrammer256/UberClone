@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import manager_dashboard
+from .views import dashboard
 
 
 urlpatterns = [
-path('', manager_dashboard, name='admin_index')
+path('', dashboard, name='admin_index')
 ]
