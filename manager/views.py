@@ -47,6 +47,10 @@ def dashboard(request):
                                     role_counts.get('driver', 0)
                                 ]},
                     {'type': 'location_data', 'values': location_points}
+        ],
+
+        'recent_trip_data' : [
+            {"id": "ER-94821" , "driver" : "Samuel Kato" , "rating" : "4.96" , "trip_counts" :"1,420" , "vehicle_name" : "Mercedes-Benz E250", "vehicle_plate_number" : "UBK 492T", "route_from": "Acacia Mall, Kisementi", "route_to" : "Entebbe International Airport (EBB)", "trip_fare" : "125,000","payment_method" : "MTN MOMO", "status": "In Progress"}
         ]
 
        

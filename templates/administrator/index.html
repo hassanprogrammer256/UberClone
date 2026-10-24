@@ -28,23 +28,66 @@
 	</div>
 
 	<section class="panel trips-panel" id="trips" aria-labelledby="trips-title">
-		<div class="trips-heading">
-			<div><h2 id="trips-title">Recent Live Rides  &amp; Bookings <i></i></h2><p>Continuous incoming dispatch orders </p></div>
-			<div class="table-tools"><label class="search-field"><i class="bx bx-search" aria-hidden="true"></i><input type="search" placeholder="Search trip ID, driver, vehicle plate" aria-label="Search trips"></label><button class="icon-button filter-button" type="button" aria-label="Filter trips"><i class="bx bx-filter-alt" aria-hidden="true"></i></button></div>
-		</div>
-		<div class="table-scroll">
-			<table class="trips-table">
-				<thead><tr><th>Trip ID</th><th>Driver</th><th>Vehicle Details</th><th>Route (From → To)</th><th>Gross Fare</th><th>Payment</th><th>Trip Status</th></tr></thead>
-				<tbody>
-					{% include "components/administrator/trip_row.html" with trip_id="ER-94821" driver_name="Samuel Kato" driver_rating="4.96" driver_trip_count="1,420" vehicle_name="Mercedes-Benz E250" vehicle_plate="UBK 492T" route_from="Acacia Mall, Kisementi" route_to="Entebbe International Airport (EBB)" trip_fare="UGX 125,000"  payment_method="MTN MoMo" trip_status="In Progress" trip_status_class="status-pill--progress" only %}
-					{% include "components/administrator/trip_row.html" with trip_id="ER-94819" driver_name="Brenda Namubiru" driver_rating="4.92" driver_trip_count="840" vehicle_name="Toyota Axio 2018" vehicle_plate="UBH 311X" route_from="Nakasero Business Tower" route_to="Speke Resort Munyonyo" trip_fare="UGX 42,000" payment_method="Airtel Money" trip_status="Completed" trip_status_class="status-pill--complete" only %}
-					{% include "components/administrator/trip_row.html" with trip_id="ER-94814" driver_name="David Mugisha" driver_rating="4.88" driver_trip_count="2,105" vehicle_name="Toyota Noah 7-Seater" vehicle_plate="UBM 702P" route_from="Makerere Main Gate" route_to="Ntinda Complex" trip_fare="UGX 38,500"  payment_method="MTN MoMo" trip_status="Dispatched (3m away)" trip_status_class="status-pill--dispatched" only %}
-					{% include "components/administrator/trip_row.html" with trip_id="ER-94808" driver_name="Joseph Ochen" driver_rating="4.98" driver_trip_count="610" vehicle_name="Toyota Premio 2012" vehicle_plate="UAJ 985K" route_from="Lugogo Mall (Shoprite)" route_to="Bugolobi Village Market" trip_fare="UGX 16,000"  payment_method="Easy Wallet" trip_status="Completed" trip_status_class="status-pill--complete" only %}
-				</tbody>
-			</table>
-		</div>
-		<div class="table-footer"><span>Displaying 4 of 342 real-time active dispatch logs</span><nav class="pagination" aria-label="Trip pages"><button class="is-current" type="button" aria-current="page">View All</button></nav></div>
-	</section>
+  <div class="trips-heading">
+    <div>
+      <h2 id="trips-title">Recent Live Rides &amp; Bookings <i></i></h2>
+      <p>Continuous incoming dispatch orders</p>
+    </div>
+    <div class="table-tools">
+      <label class="search-field">
+        <i class="bx bx-search" aria-hidden="true"></i>
+        <input type="search" placeholder="Search trip ID, driver, vehicle plate" aria-label="Search trips">
+      </label>
+      <button class="icon-button filter-button" type="button" aria-label="Filter trips">
+        <i class="bx bx-filter-alt" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    {% if role == "admin" %}
+      <table class="trips-table">
+        <thead>
+          <tr>
+            <th>Trip ID</th>
+            <th>Driver</th>
+            <th>Vehicle Details</th>
+            <th>Route (From → To)</th>
+            <th>Gross Fare</th>
+            <th>Payment</th>
+            <th>Trip Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if recent_trip_data|length != 0 %}
+            {% for row in recent_trip_data %}
+              {% include "components/administrator/trip_row.html" with trip_id=row.id driver_name=row.driver driver_rating=row.rating driver_trip_count=row.trip_counts vehicle_name=row.vehicle_name vehicle_plate=row.vehicle_platenumber route_from=row.route_from route_to=row.route_to trip_fare=row.trip_fare payment_method=row.payment_method trip_status=row.status trip_status_class="status-pill--progress" only %}
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center" style="padding: 2rem; font-weight: bold; color: #888;">
+                No Trips Data Available
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="unauthorized-message" style="padding: 2rem; text-align: center;">
+        <p>You do not have permission to view active dispatch logs.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="table-footer">
+    <span>Displaying {{ recent_trip_data|length }} of {{ trip_data_counts }} real-time active dispatch logs</span>
+    <nav class="pagination" aria-label="Trip pages">
+      <button class="is-current" type="button" aria-current="page">View All</button>
+    </nav>
+  </div>
+</section>
+
+
 </section>
 {% endblock %}
 

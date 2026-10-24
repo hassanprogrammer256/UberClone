@@ -5,3 +5,4 @@ from .views import dashboard
 urlpatterns = [
 path('', dashboard, name='admin_index')
 ]
+
