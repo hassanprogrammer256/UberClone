@@ -18,20 +18,20 @@
 <body class="admin-body">
 	<div class="admin-shell">
 		<aside class="admin-sidebar" aria-label="Administration">
-			<a class="admin-brand" href="#overview">
+			<a class="admin-brand" href="{%url 'admin_index'%}">
 				<img src="{% static 'images/logo.png' %}" alt="">
 				<span><strong>Easy Rides</strong><small>UGANDA</small></span>
 			</a>
 
 			<nav class="admin-nav" aria-label="Main navigation">
 				{%for item in side_nav%}
-				<a  href={{item.to}} ><i class= "{{item.icon_class}}" aria-hidden="true"></i><span>{{item.label}}</span></a>
+				<a  href="{% url item.to %}" ><i class= "{{item.icon_class}}" aria-hidden="true"></i><span>{{item.label}}</span></a>
 				{%endfor%}
 
-				{% comment %} <a href="#fleet"><i class="bx bx-group" aria-hidden="true"></i><span>Customers</span></a>
-				<a href="#drivers"><i class="bx bx-steering-wheel" aria-hidden="true"></i><span>Drivers</span></a>
+				
+				{% comment %} <a href="#drivers"><i class="bx bx-steering-wheel" aria-hidden="true"></i><span>Drivers</span></a>
 				<a href="#trips"><i class="bx bx-car" aria-hidden="true"></i><span>Rides &amp; Trips</span></a>
-				<a href="#revenue"><i class="bx bx-wallet" aria-hidden="true"></i><span>Earnings &amp; Payouts</span></a> {% endcomment %}
+				<a href="#revenue"><i class="bx bx-wallet" aria-hidden="true"></i><span>Earnings &amp; Payouts</span></a>  {% endcomment %}
 			
 			</nav>
 			<div class="sidebar-profile admin-profile"><span class="profile-avatar" aria-hidden="true"><i class="bx bxs-user"></i>

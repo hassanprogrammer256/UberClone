@@ -39,6 +39,7 @@ class Location(models.Model):
         return self.name
 
 class Vehicle(models.Model):
+    name = models.CharField(max_length=50)
     driver = models.ForeignKey(DriverProfile,on_delete=models.CASCADE,null=True,blank=True)
     plate_number = models.CharField(max_length=15,unique=True)
     model = models.CharField(max_length=15)
@@ -63,6 +64,7 @@ class CustomerPayment(models.Model):
 class Trip(models.Model):
     customer = models.ForeignKey(CustomerProfile,on_delete=models.CASCADE,null=True)
     driver = models.ForeignKey(DriverProfile,on_delete=models.CASCADE)
+    vehicle = models.ForeignKey(Vehicle,on_delete=models.SET_NULL,null=True)
     trip_date = models.DateField(auto_created=True)
     origin = models.ForeignKey(Location,on_delete=models.CASCADE,verbose_name="From",related_name="origins")
     destination = models.ForeignKey(Location,on_delete=models.CASCADE,verbose_name="To",related_name="destinations")

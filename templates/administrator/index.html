@@ -1,10 +1,9 @@
-{% extends "administrator/layout.html" %}
+{% extends "common/layout.html" %}
 
 {% block title %}Easy Rides Admin{% endblock %}
 
 {% block content %}
 <section class="dashboard" id="overview" aria-labelledby="dashboard-title">
-
 	<section class="metrics-grid" aria-label="Today's performance">
 {% for metric in overview %}
   {% include "components/administrator/metric_card.html" with metric_label=metric.label metric_value=metric.value metric_icon=metric.icon metric_note=metric.note only %}
@@ -61,7 +60,7 @@
         <tbody>
           {% if recent_trip_data|length != 0 %}
             {% for row in recent_trip_data %}
-              {% include "components/administrator/trip_row.html" with trip_id=row.id driver_name=row.driver driver_rating=row.rating driver_trip_count=row.trip_counts vehicle_name=row.vehicle_name vehicle_plate=row.vehicle_platenumber route_from=row.route_from route_to=row.route_to trip_fare=row.trip_fare payment_method=row.payment_method trip_status=row.status trip_status_class="status-pill--progress" only %}
+              {% include "components/administrator/trip_row.html" with trip_id=row.id driver_name=row.driver driver_trip_count=row.trip_counts vehicle_name=row.vehicle_name vehicle_plate=row.vehicle_platenumber route_from=row.route_from route_to=row.route_to trip_fare=row.trip_fare payment_method=row.payment_method trip_status=row.status trip_status_class="status-pill--progress" only %}
             {% endfor %}
           {% else %}
             <tr>
