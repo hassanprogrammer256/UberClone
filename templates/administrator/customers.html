@@ -1,24 +1,17 @@
-{% extends "common/layout.html" %}
+{% extends "common/admin_base.html" %}
 {% load static %}
 
-{% block title %}Customers | Easy Rides Admin{% endblock %}
+{% block admin_title %}Customers | Easy Rides Admin{% endblock %}
 
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/customers.css' %}">
+{% block page_title %}Customers Management Center{% endblock %}
+{% block page_intro %}Manage customer details{% endblock %}
+{% block page_action %}
+<button class="customer-primary-button" type="button" data-customer-add>
+	<i class="bx bx-user-plus" aria-hidden="true"></i> Add customer
+</button>
 {% endblock %}
 
-{% block content %}
-<section class="customer-page" aria-labelledby="customers-title">
-	<header class="customer-heading">
-		<div>
-			<h1 id="customers-title">Customers Management Center</h1>
-			<p class="customer-intro">Manage customer details</p>
-		</div>
-		<button class="customer-primary-button" type="button" data-customer-add>
-			<i class="bx bx-user-plus" aria-hidden="true"></i> Add customer
-		</button>
-	</header>
-
+{% block admin_content %}
 	<section class="customer-metrics" aria-label="Customer overview">
 		<article class="customer-metric">
 			<span class="customer-metric__icon"><i class="bx bx-group" aria-hidden="true"></i></span>
@@ -97,6 +90,10 @@
 									data-address="{{ customer.address }}">
 									<i class="bx bx-edit-alt" aria-hidden="true"></i>
 								</button>
+								<button class="customer-edit-button admin-delete-button" type="button" aria-label="Delete {{ customer.user.full_name|default:customer.user.email }}"
+									data-delete-open data-delete-id="{{ customer.pk }}">
+									<i class="bx bx-trash" aria-hidden="true"></i>
+								</button>
 							</div>
 						</td>
 						<td>{{ customer.user.get_gender_display|default:"Not specified" }}</td>
@@ -115,9 +112,9 @@
 		</div>
 		<footer class="customer-table-footer"><span>Showing <strong data-customer-visible>{{ customer_count }}</strong> of {{ customer_count }} customers</span></footer>
 	</section>
-</section>
 
-<div class="customer-modal-backdrop" data-customer-modal-backdrop {% if active_modal %}data-open="true"{% endif %}>
+
+	<div class="customer-modal-backdrop" data-customer-modal-backdrop {% if active_modal %}data-open="true"{% endif %}>
 	<section class="customer-modal" role="dialog" aria-modal="true" aria-labelledby="customer-modal-title" aria-describedby="customer-modal-description">
 		<header class="customer-modal__header">
 			<div>
@@ -191,12 +188,23 @@
 		</form>
 	</section>
 </div>
+
+<div class="customer-modal-backdrop" data-delete-backdrop>
+	<section class="customer-modal admin-confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="customer-delete-title" aria-describedby="customer-delete-description">
+		<header class="customer-modal__header"><div><h2 id="customer-delete-title">Delete customer?</h2><p id="customer-delete-description">This permanently removes the customer and their trip records. Related payments remain in history without customer or trip links.</p></div></header>
+		<form method="post" class="customer-form">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="customer_id" data-delete-id-field>
+			<footer class="customer-form__actions"><button class="customer-secondary-button" type="button" data-delete-cancel>Keep customer</button><button class="customer-primary-button admin-danger-button" type="submit">Delete customer</button></footer>
+		</form>
+	</section>
+</div>
 {% endblock %}
 
 {% block page_scripts %}
 <script>
 	(() => {
 		const backdrop = document.querySelector('[data-customer-modal-backdrop]');
+		const deleteBackdrop = document.querySelector('[data-delete-backdrop]');
+		const deleteId = document.querySelector('[data-delete-id-field]');
 		const form = document.querySelector('[data-customer-form]');
 		const title = document.getElementById('customer-modal-title');
 		const action = document.querySelector('[data-customer-action]');
@@ -269,6 +277,17 @@
 			}));
 		});
 		document.querySelectorAll('[data-customer-close]').forEach((button) => button.addEventListener('click', closeModal));
+		document.querySelectorAll('[data-delete-open]').forEach((button) => button.addEventListener('click', () => {
+			deleteId.value = button.dataset.deleteId;
+			deleteBackdrop.dataset.open = 'true';
+		}));
+		document.querySelector('[data-delete-cancel]').addEventListener('click', () => delete deleteBackdrop.dataset.open);
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') {
+				delete backdrop.dataset.open;
+				delete deleteBackdrop.dataset.open;
+			}
+		});
 		backdrop.addEventListener('click', (event) => {
 			if (event.target === backdrop) closeModal();
 		});

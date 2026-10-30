@@ -1,0 +1,132 @@
+.admin-chart-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1.45fr) minmax(260px, 1fr);
+	gap: 12px;
+	margin-bottom: 18px;
+}
+
+.admin-chart-card {
+	min-width: 0;
+	padding: 17px 18px 14px;
+	background: #fff;
+	border: 1px solid #eeeff4;
+	border-radius: 7px;
+}
+
+.admin-chart-card__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 8px;
+}
+
+.admin-chart-card__header .customer-kicker {
+	margin-bottom: 5px;
+}
+
+.admin-chart-card__header h2 {
+	margin: 0;
+	font-size: 17px;
+}
+
+.admin-chart-card__header > .bx {
+	color: #6b6b73;
+	font-size: 20px;
+}
+
+.admin-chart-card__plot {
+	position: relative;
+	height: 245px;
+}
+
+.admin-chart-card__plot--pie {
+	height: 245px;
+}
+
+.admin-route-arrow {
+	padding: 0 3px;
+	color: #77747d;
+	font-family: var(--admin-sans);
+	font-size: 10px;
+}
+
+.admin-status {
+	display: inline-flex;
+	align-items: center;
+	min-height: 23px;
+	padding: 0 8px;
+	color: #4a4b52;
+	background: #f0f1f5;
+	border-radius: 4px;
+	font-family: var(--admin-sans);
+	font-size: 10px;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.admin-status--completed {
+	color: #087c47;
+	background: #e7f6ee;
+}
+
+.admin-status--in_progress {
+	color: #174eae;
+	background: #e8efff;
+}
+
+.admin-status--cancelled {
+	color: #a52e37;
+	background: #fff0f0;
+}
+
+@media (max-width: 900px) {
+	.admin-chart-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+@media (max-width: 760px) {
+	.admin-chart-card {
+		padding: 14px;
+	}
+
+	.admin-chart-card__plot,
+	.admin-chart-card__plot--pie {
+		height: 220px;
+	}
+}
+
+.admin-row-actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 3px;
+}
+
+.admin-delete-button {
+	color: #a52e37;
+}
+
+.admin-delete-button:hover {
+	color: #8d1d27;
+	background: #fff0f0;
+}
+
+.admin-danger-button,
+.admin-danger-button:hover {
+	color: #fff;
+	background: #b42332;
+}
+
+.admin-danger-button:hover {
+	background: #951c29;
+}
+
+.admin-confirm-modal {
+	width: min(100%, 440px);
+}
+
+.admin-confirm-modal .customer-form__actions {
+	margin-top: 0;
+}
