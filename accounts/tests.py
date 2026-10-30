@@ -2,15 +2,34 @@ import io
 from contextlib import redirect_stdout
 from io import StringIO
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 from PIL import Image
 
 from api.models import Location
 from accounts.models import CustomerProfile, DriverProfile
+
+
+class CustomSuperuserCommandTests(TestCase):
+	@patch('accounts.management.commands.createcustomsuperuser.getpass', side_effect=['Secure-test-pass-2026!', 'Secure-test-pass-2026!'])
+	@patch('builtins.input', side_effect=['admin@example.com', '+256700000777'])
+	def test_command_creates_admin_superuser(self, mocked_input, mocked_getpass):
+		output = StringIO()
+
+		call_command('createcustomsuperuser', stdout=output)
+
+		user = get_user_model().objects.get(email='admin@example.com')
+		self.assertEqual(user.phone_number, '+256700000777')
+		self.assertEqual(user.role, 'admin')
+		self.assertTrue(user.is_staff)
+		self.assertTrue(user.is_superuser)
+		self.assertTrue(user.check_password('Secure-test-pass-2026!'))
+		self.assertIn('created successfully', output.getvalue())
 
 
 class RegistrationTests(TestCase):
