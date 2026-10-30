@@ -1256,11 +1256,6 @@ input:focus-visible {
 		grid-template-columns: 1fr;
 	}
 
-	.fleet-content {
-		grid-template-columns: 160px minmax(0, 1fr);
-		max-width: 460px;
-		margin-inline: auto;
-	}
 }
 
 @media (max-width: 600px) {
@@ -1402,45 +1397,15 @@ input:focus-visible {
 		padding: 14px;
 	}
 
-	.trends-panel .panel-heading {
-		align-items: flex-start;
-		flex-direction: column;
-	}
-
-	.chart-legend {
-		width: 100%;
-		justify-content: space-between;
-		gap: 4px;
-		margin-top: 12px;
-	}
-
-	.chart-legend span {
-		max-width: 90px;
-		font-size: 8px;
-	}
-
 	.chart-wrap {
-		height: 190px;
-		margin-top: 8px;
+
+	.chart-wrap,
+	.chart-wrap--scatter {
+		height: 220px;
 	}
 
-	.chart-tooltip {
-		top: 15%;
-		left: 44%;
-		font-size: 9px;
-	}
-
-	.chart-times {
-		font-size: 8px;
-	}
-
-	.fleet-content {
-		grid-template-columns: minmax(100px, .8fr) minmax(0, 1.2fr);
-		gap: 10px;
-	}
-
-	.donut-chart {
-		width: min(100%, 130px);
+	.chart-wrap--doughnut {
+		height: 210px;
 	}
 
 	.cluster-list {

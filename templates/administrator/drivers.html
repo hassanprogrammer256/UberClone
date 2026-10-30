@@ -1,0 +1,211 @@
+{% extends "common/admin_base.html" %}
+{% load static %}
+
+{% block admin_title %}Drivers | Easy Rides Admin{% endblock %}
+{% block page_title %}Drivers Management Center{% endblock %}
+{% block page_intro %}Review driver profiles and trip activity{% endblock %}
+{% block page_action %}
+<button class="customer-primary-button" type="button" data-customer-add>
+	<i class="bx bx-user-plus" aria-hidden="true"></i> Add driver
+</button>
+{% endblock %}
+{% block admin_content %}
+<section class="customer-metrics" aria-label="Driver overview">
+	<article class="customer-metric">
+		<span class="customer-metric__icon"><i class="bx bx-steering-wheel" aria-hidden="true"></i></span>
+		<div><p>Registered drivers</p><strong>{{ driver_count }}</strong></div>
+	</article>
+	<article class="customer-metric">
+		<span class="customer-metric__icon customer-metric__icon--blue"><i class="bx bx-car" aria-hidden="true"></i></span>
+		<div><p>Total trips driven</p><strong>{{ trip_count }}</strong></div>
+	</article>
+	<article class="customer-metric">
+		<div class="customer-top-spender">
+			<p>Most experienced driver</p>
+			{% if top_driver %}
+			<div class="customer-top-spender__details">
+				<span class="customer-top-spender__avatar">
+					{% if top_driver.user.image %}<img src="{{ top_driver.user.image.url }}" alt="">{% else %}<i class="bx bx-user" aria-hidden="true"></i>{% endif %}
+				</span>
+				<div class="customer-top-spender__identity">
+					<strong>{{ top_driver.user.full_name|default:top_driver.user.email }}</strong>
+					<span>{{ top_driver.trip_count }} trips</span>
+				</div>
+			</div>
+			{% else %}<div class="customer-top-spender__empty">No driver profiles yet</div>{% endif %}
+		</div>
+	</article>
+</section>
+
+<section class="customer-directory" aria-labelledby="drivers-directory-title">
+	<div class="customer-directory__heading">
+		<div>
+			<p class="customer-kicker">People</p>
+			<h2 id="drivers-directory-title">Driver directory <span>{{ driver_count }}</span></h2>
+		</div>
+		<label class="customer-search">
+			<i class="bx bx-search" aria-hidden="true"></i>
+			<input type="search" placeholder="Search name, phone or email" aria-label="Search drivers" data-table-search>
+		</label>
+	</div>
+	<div class="customer-table-scroll">
+		<table class="customer-table">
+			<thead><tr>
+				<th scope="col">Driver</th><th scope="col">Gender</th><th scope="col">Phone number</th>
+				<th scope="col">Email</th><th scope="col">Date of birth</th><th scope="col">Address</th><th scope="col">Trips</th><th scope="col">Actions</th>
+			</tr></thead>
+			<tbody data-table-rows>
+				{% for driver in drivers %}
+				<tr data-table-row>
+					<td><div class="customer-name-cell">
+						<span class="customer-avatar">{% if driver.user.image %}<img src="{{ driver.user.image.url }}" alt="">{% else %}<i class="bx bx-user" aria-hidden="true"></i>{% endif %}</span>
+						<span class="customer-name">{{ driver.user.full_name|default:driver.user.email }}</span>
+					</div></td>
+					<td>{{ driver.user.get_gender_display|default:"Not specified" }}</td>
+					<td>{{ driver.user.phone_number }}</td>
+					<td><a class="customer-email" href="mailto:{{ driver.user.email }}">{{ driver.user.email }}</a></td>
+					<td>{{ driver.date_of_birth|date:"M j, Y" }}</td>
+					<td class="customer-address">{{ driver.address|default:"Not provided" }}</td>
+					<td><span class="customer-trip-count">{{ driver.trip_count }}</span></td>
+					<td><div class="admin-row-actions">
+						<button class="customer-edit-button" type="button" aria-label="Edit {{ driver.user.full_name|default:driver.user.email }}" data-driver-edit
+							data-id="{{ driver.pk }}" data-first-name="{{ driver.user.first_name }}" data-last-name="{{ driver.user.last_name }}"
+							data-gender="{{ driver.user.gender|default:'' }}" data-phone="{{ driver.user.phone_number }}" data-email="{{ driver.user.email }}"
+							data-date-of-birth="{{ driver.date_of_birth|date:'Y-m-d' }}" data-address="{{ driver.address }}"
+							data-image-url="{% if driver.user.image %}{{ driver.user.image.url }}{% endif %}"><i class="bx bx-edit-alt" aria-hidden="true"></i></button>
+						<button class="customer-edit-button admin-delete-button" type="button" aria-label="Delete {{ driver.user.full_name|default:driver.user.email }}"
+							data-delete-open data-delete-id="{{ driver.pk }}" data-delete-name="{{ driver.user.full_name|default:driver.user.email }}">
+							<i class="bx bx-trash" aria-hidden="true"></i></button>
+					</div></td>
+				</tr>
+				{% empty %}<tr><td class="customer-empty" colspan="8">No drivers have been added yet.</td></tr>{% endfor %}
+				<tr class="customer-empty" data-table-empty hidden><td colspan="8">No drivers match your search.</td></tr>
+			</tbody>
+		</table>
+	</div>
+	<footer class="customer-table-footer">Showing <strong data-table-visible>{{ driver_count }}</strong> of {{ driver_count }} drivers</footer>
+</section>
+
+<div class="customer-modal-backdrop" data-driver-modal-backdrop {% if active_modal %}data-open="true"{% endif %}>
+	<section class="customer-modal" role="dialog" aria-modal="true" aria-labelledby="driver-modal-title" aria-describedby="driver-modal-description">
+		<header class="customer-modal__header"><div><h2 id="driver-modal-title">{% if active_action == 'edit' %}Edit driver{% else %}Add driver{% endif %}</h2><p id="driver-modal-description">Enter the driver's profile and contact details.</p></div>
+			<button class="customer-modal__close" type="button" aria-label="Close dialog" data-driver-close><i class="bx bx-x" aria-hidden="true"></i></button>
+		</header>
+		<form method="post" enctype="multipart/form-data" class="customer-form" data-driver-form>
+			{% csrf_token %}<input type="hidden" name="action" value="{{ active_action }}" data-driver-action>
+			<input type="hidden" name="driver_id" value="{% if selected_driver %}{{ selected_driver.pk }}{% endif %}" data-driver-id>
+			{% if driver_form.non_field_errors %}<div class="customer-form__error" role="alert">{{ driver_form.non_field_errors }}</div>{% endif %}
+			<div class="customer-form__grid">
+				<div class="customer-field customer-avatar-field customer-field--wide">
+					<label for="driver-image">Profile image</label><div class="customer-avatar-picker">
+						<span class="customer-avatar-picker__preview" data-driver-avatar-preview>{% if selected_driver.user.image %}<img src="{{ selected_driver.user.image.url }}" alt="">{% else %}<i class="bx bx-user" aria-hidden="true"></i>{% endif %}</span>
+						<button class="customer-avatar-picker__trigger" type="button" data-driver-image-trigger aria-label="Choose profile image" title="Choose profile image"><i class="bx bx-camera" aria-hidden="true"></i></button>
+						<input class="customer-avatar-picker__input" id="driver-image" name="image" type="file" accept="image/jpeg,image/png,image/webp" data-driver-image>
+					</div>{% for error in driver_form.image.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}
+				</div>
+				<div class="customer-field"><label for="driver-first-name">First name</label><input id="driver-first-name" name="first_name" required maxlength="30" value="{{ driver_form.first_name.value|default_if_none:'' }}">{% for error in driver_form.first_name.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="driver-last-name">Last name</label><input id="driver-last-name" name="last_name" required maxlength="30" value="{{ driver_form.last_name.value|default_if_none:'' }}">{% for error in driver_form.last_name.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="driver-phone">Phone number</label><input id="driver-phone" name="phone_number" type="tel" required maxlength="15" value="{{ driver_form.phone_number.value|default_if_none:'' }}">{% for error in driver_form.phone_number.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="driver-email">Email address</label><input id="driver-email" name="email" type="email" required value="{{ driver_form.email.value|default_if_none:'' }}">{% for error in driver_form.email.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="driver-gender">Gender</label><select id="driver-gender" name="gender">{% for value, label in driver_form.gender.field.choices %}<option value="{{ value }}" {% if driver_form.gender.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{% for error in driver_form.gender.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="driver-date-of-birth">Date of birth</label><input id="driver-date-of-birth" name="date_of_birth" type="date" required value="{{ driver_form.date_of_birth.value|default_if_none:'' }}">{% for error in driver_form.date_of_birth.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field customer-field--wide"><label for="driver-address">Address</label><textarea id="driver-address" name="address" rows="3" maxlength="500" required>{{ driver_form.address.value|default_if_none:'' }}</textarea>{% for error in driver_form.address.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+			</div>
+			<footer class="customer-form__actions"><button class="customer-secondary-button" type="button" data-driver-close>Cancel</button><button class="customer-primary-button" type="submit" data-driver-submit>{% if active_action == 'edit' %}Save changes{% else %}Add driver{% endif %}</button></footer>
+		</form>
+	</section>
+</div>
+
+<div class="customer-modal-backdrop" data-delete-backdrop>
+	<section class="customer-modal admin-confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="driver-delete-title" aria-describedby="driver-delete-description">
+		<header class="customer-modal__header"><div><h2 id="driver-delete-title">Delete driver?</h2><p id="driver-delete-description">Deleting this driver also deletes linked vehicles and trip records. Payment history remains, but linked trips are cleared.</p></div></header>
+		<form method="post" class="customer-form">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="driver_id" data-delete-id-field>
+			<footer class="customer-form__actions"><button class="customer-secondary-button" type="button" data-delete-cancel>Keep driver</button><button class="customer-primary-button admin-danger-button" type="submit">Delete driver</button></footer>
+		</form>
+	</section>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+	(() => {
+		const backdrop = document.querySelector('[data-driver-modal-backdrop]');
+		const form = document.querySelector('[data-driver-form]');
+		const imageInput = document.querySelector('[data-driver-image]');
+		const avatarPreview = document.querySelector('[data-driver-avatar-preview]');
+		const action = document.querySelector('[data-driver-action]');
+		const driverId = document.querySelector('[data-driver-id]');
+		const fields = {
+			first_name: document.getElementById('driver-first-name'),
+			last_name: document.getElementById('driver-last-name'),
+			phone_number: document.getElementById('driver-phone'),
+			email: document.getElementById('driver-email'),
+			gender: document.getElementById('driver-gender'),
+			date_of_birth: document.getElementById('driver-date-of-birth'),
+			address: document.getElementById('driver-address'),
+		};
+		let previewUrl = '';
+		const setPreview = (url) => {
+			if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+			previewUrl = url || '';
+			avatarPreview.replaceChildren();
+			if (url) {
+				const image = document.createElement('img');
+				image.src = url;
+				image.alt = '';
+				avatarPreview.append(image);
+			} else {
+				const icon = document.createElement('i');
+				icon.className = 'bx bx-user';
+				icon.setAttribute('aria-hidden', 'true');
+				avatarPreview.append(icon);
+			}
+		};
+		const openDriverModal = (mode, driver = null) => {
+			form.reset();
+			Object.entries(fields).forEach(([name, field]) => { field.value = driver ? driver[name] || '' : ''; });
+			action.value = mode;
+			driverId.value = driver?.id || '';
+			setPreview(driver?.image_url || '');
+			document.getElementById('driver-modal-title').textContent = mode === 'edit' ? 'Edit driver' : 'Add driver';
+			document.querySelector('[data-driver-submit]').textContent = mode === 'edit' ? 'Save changes' : 'Add driver';
+			backdrop.dataset.open = 'true';
+			fields.first_name.focus();
+		};
+		document.querySelector('[data-customer-add]').addEventListener('click', () => openDriverModal('add'));
+		document.querySelectorAll('[data-driver-edit]').forEach((button) => button.addEventListener('click', () => openDriverModal('edit', {
+			id: button.dataset.id, first_name: button.dataset.firstName, last_name: button.dataset.lastName,
+			phone_number: button.dataset.phone, email: button.dataset.email, gender: button.dataset.gender,
+			date_of_birth: button.dataset.dateOfBirth, address: button.dataset.address, image_url: button.dataset.imageUrl,
+		})));
+		document.querySelectorAll('[data-driver-close]').forEach((button) => button.addEventListener('click', () => delete backdrop.dataset.open));
+		document.querySelector('[data-driver-image-trigger]').addEventListener('click', () => imageInput.click());
+		imageInput.addEventListener('change', () => { const [file] = imageInput.files; if (file) setPreview(URL.createObjectURL(file)); });
+		backdrop.addEventListener('click', (event) => { if (event.target === backdrop) delete backdrop.dataset.open; });
+		const deleteBackdrop = document.querySelector('[data-delete-backdrop]');
+		const deleteId = document.querySelector('[data-delete-id-field]');
+		document.querySelectorAll('[data-delete-open]').forEach((button) => button.addEventListener('click', () => {
+			deleteId.value = button.dataset.deleteId;
+			deleteBackdrop.dataset.open = 'true';
+		}));
+		document.querySelector('[data-delete-cancel]').addEventListener('click', () => delete deleteBackdrop.dataset.open);
+		document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { delete backdrop.dataset.open; delete deleteBackdrop.dataset.open; } });
+
+		const search = document.querySelector('[data-table-search]');
+		const rows = [...document.querySelectorAll('[data-table-row]')];
+		const empty = document.querySelector('[data-table-empty]');
+		const visible = document.querySelector('[data-table-visible]');
+		search.addEventListener('input', () => {
+			const query = search.value.trim().toLocaleLowerCase();
+			let count = 0;
+			rows.forEach((row) => {
+				const matches = row.textContent.toLocaleLowerCase().includes(query);
+				row.hidden = !matches;
+				if (matches) count += 1;
+			});
+			empty.hidden = count !== 0 || query.length === 0;
+			visible.textContent = count;
+		});
+	})();
+</script>
+{% endblock %}

@@ -1,0 +1,315 @@
+{% extends "common/admin_base.html" %}
+{% load static %}
+
+{% block admin_title %}Customers | Easy Rides Admin{% endblock %}
+
+{% block page_title %}Customers Management Center{% endblock %}
+{% block page_intro %}Manage customer details{% endblock %}
+{% block page_action %}
+<button class="customer-primary-button" type="button" data-customer-add>
+	<i class="bx bx-user-plus" aria-hidden="true"></i> Add customer
+</button>
+{% endblock %}
+
+{% block admin_content %}
+	<section class="customer-metrics" aria-label="Customer overview">
+		<article class="customer-metric">
+			<span class="customer-metric__icon"><i class="bx bx-group" aria-hidden="true"></i></span>
+			<div><p>Registered customers</p><strong>{{customer_count }}</strong></div>
+		</article>
+		<article class="customer-metric">
+			<span class="customer-metric__icon"><i class="bx bx-target" aria-hidden="true"></i></span>
+			<div><p>Most Active Destination</p><strong>{{ trip_count }}</strong></div>
+		</article>
+		<article class="customer-metric">
+			<div class="customer-top-spender">
+				<p>Biggest Money Spender</p>
+				{% if top_spender %}
+				<div class="customer-top-spender__details">
+					<span class="customer-top-spender__avatar">
+						{% if top_spender.user.image %}
+						<img src="{{ top_spender.user.image.url }}" alt="{{ top_spender.user.full_name }}">
+						{% else %}
+						<i class="bx bx-user" aria-hidden="true"></i>
+						{% endif %}
+					</span>
+					<div class="customer-top-spender__identity">
+						<strong>{{ top_spender.user.full_name|default:top_spender.user.email }}</strong>
+						<span>UGX {{ top_spender.amount_spent|floatformat:0 }}</span>
+					</div>
+				</div>
+				{% else %}
+				<div class="customer-top-spender__empty">No customer spend recorded</div>
+				{% endif %}
+			</div>
+		</article>
+	</section>
+
+	<section class="customer-directory" aria-labelledby="directory-title">
+		<div class="customer-directory__heading">
+			<label class="customer-search">
+				<i class="bx bx-search" aria-hidden="true"></i>
+				<input type="search" placeholder="Search name, phone, email or address" aria-label="Search customers" data-customer-search>
+			</label>
+		</div>
+		<div class="customer-table-scroll">
+			<table class="customer-table">
+				<thead>
+					<tr>
+						<th scope="col">Name</th>
+						<th scope="col">Gender</th>
+						<th scope="col">Phone number</th>
+						<th scope="col">Email</th>
+						<th scope="col">Address</th>
+						<th scope="col">Amount spent</th>
+						<th scope="col">Trips</th>
+					</tr>
+				</thead>
+				<tbody data-customer-rows>
+					{% for customer in customers %}
+					<tr data-customer-row>
+						<td>
+							<div class="customer-name-cell">
+								<span class="customer-avatar">
+									{% if customer.user.image %}
+									<img src="{{ customer.user.image.url }}" alt="">
+									{% else %}
+									<i class="bx bx-user" aria-hidden="true"></i>
+									{% endif %}
+								</span>
+								<span class="customer-name">{{ customer.user.full_name|default:customer.user.email }}</span>
+								<button class="customer-edit-button" type="button" aria-label="Edit {{ customer.user.full_name|default:customer.user.email }}"
+									data-customer-edit
+									data-id="{{ customer.pk }}"
+									data-first-name="{{ customer.user.first_name }}"
+									data-last-name="{{ customer.user.last_name }}"
+									data-gender="{{ customer.user.gender|default:'' }}"
+									data-image-url="{% if customer.user.image %}{{ customer.user.image.url }}{% endif %}"
+									data-phone="{{ customer.user.phone_number }}"
+									data-email="{{ customer.user.email }}"
+									data-address="{{ customer.address }}">
+									<i class="bx bx-edit-alt" aria-hidden="true"></i>
+								</button>
+								<button class="customer-edit-button admin-delete-button" type="button" aria-label="Delete {{ customer.user.full_name|default:customer.user.email }}"
+									data-delete-open data-delete-id="{{ customer.pk }}">
+									<i class="bx bx-trash" aria-hidden="true"></i>
+								</button>
+							</div>
+						</td>
+						<td>{{ customer.user.get_gender_display|default:"Not specified" }}</td>
+						<td>{{ customer.user.phone_number }}</td>
+						<td><a class="customer-email" href="mailto:{{ customer.user.email }}">{{ customer.user.email }}</a></td>
+						<td class="customer-address">{{ customer.address|default:"Not provided" }}</td>
+						<td class="customer-spend">UGX {{ customer.amount_spent|default:0|floatformat:0 }}</td>
+						<td><span class="customer-trip-count">{{ customer.trip_count }}</span></td>
+					</tr>
+					{% empty %}
+					<tr><td class="customer-empty" colspan="7">No customers have been added yet.</td></tr>
+					{% endfor %}
+					<tr class="customer-empty" data-customer-no-results hidden><td colspan="7">No customers match your search.</td></tr>
+				</tbody>
+			</table>
+		</div>
+		<footer class="customer-table-footer"><span>Showing <strong data-customer-visible>{{ customer_count }}</strong> of {{ customer_count }} customers</span></footer>
+	</section>
+
+
+	<div class="customer-modal-backdrop" data-customer-modal-backdrop {% if active_modal %}data-open="true"{% endif %}>
+	<section class="customer-modal" role="dialog" aria-modal="true" aria-labelledby="customer-modal-title" aria-describedby="customer-modal-description">
+		<header class="customer-modal__header">
+			<div>
+				<h2 id="customer-modal-title">{% if active_modal == 'edit' %}Edit customer{% else %}Add customer{% endif %}</h2>
+				<p id="customer-modal-description">Enter the customer's contact information and address.</p>
+			</div>
+			<button class="customer-modal__close" type="button" aria-label="Close dialog" data-customer-close><i class="bx bx-x" aria-hidden="true"></i></button>
+		</header>
+		<form method="post" enctype="multipart/form-data" class="customer-form" data-customer-form>
+			{% csrf_token %}
+			<input type="hidden" name="action" value="{% if active_modal == 'edit' %}edit{% else %}add{% endif %}" data-customer-action>
+			<input type="hidden" name="customer_id" value="{% if selected_customer %}{{ selected_customer.pk }}{% endif %}" data-customer-id>
+			{% if customer_form.non_field_errors %}<div class="customer-form__error" role="alert">{{ customer_form.non_field_errors }}</div>{% endif %}
+			<div class="customer-form__grid">
+				<div class="customer-field customer-avatar-field customer-field--wide">
+					<label for="customer-image">Profile image</label>
+					<div class="customer-avatar-picker">
+						<span class="customer-avatar-picker__preview" data-avatar-preview>
+							{% if selected_customer.user.image %}
+							<img src="{{ selected_customer.user.image.url }}" alt="">
+							{% else %}
+							<i class="bx bx-user" aria-hidden="true"></i>
+							{% endif %}
+						</span>
+						<button class="customer-avatar-picker__trigger" type="button" data-image-trigger aria-label="Choose profile image" title="Choose profile image">
+							<i class="bx bx-camera" aria-hidden="true"></i>
+						</button>
+						<input class="customer-avatar-picker__input" id="customer-image" name="image" type="file" accept="image/jpeg,image/png,image/webp" data-customer-image>
+					</div>
+					{% for error in customer_form.image.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}
+				</div>
+				<div class="customer-field">
+					<label for="customer-first-name">First name</label>
+					<input id="customer-first-name" name="first_name" type="text" maxlength="30" autocomplete="given-name" required value="{{ customer_form.first_name.value|default_if_none:'' }}">
+					{% for error in customer_form.first_name.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}
+				</div>
+				<div class="customer-field">
+					<label for="customer-last-name">Last name</label>
+					<input id="customer-last-name" name="last_name" type="text" maxlength="30" autocomplete="family-name" required value="{{ customer_form.last_name.value|default_if_none:'' }}">
+					{% for error in customer_form.last_name.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}
+				</div>
+				<div class="customer-field">
+					<label for="customer-phone">Phone number</label>
+					<input id="customer-phone" name="phone_number" type="tel" maxlength="15" autocomplete="tel" required value="{{ customer_form.phone_number.value|default_if_none:'' }}">
+					{% for error in customer_form.phone_number.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}
+				</div>
+				<div class="customer-field">
+					<label for="customer-email">Email address</label>
+					<input id="customer-email" name="email" type="email" autocomplete="email" required value="{{ customer_form.email.value|default_if_none:'' }}">
+					{% for error in customer_form.email.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}
+				</div>
+				<div class="customer-field">
+					<label for="customer-gender">Gender</label>
+					<select id="customer-gender" name="gender">
+						{% for value, label in customer_form.gender.field.choices %}
+						<option value="{{ value }}" {% if customer_form.gender.value == value %}selected{% endif %}>{{ label }}</option>
+						{% endfor %}
+					</select>
+					{% for error in customer_form.gender.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}
+				</div>
+				<div class="customer-field customer-field--wide">
+					<label for="customer-address">Address</label>
+					<textarea id="customer-address" name="address" rows="3" maxlength="500" autocomplete="street-address" required>{{ customer_form.address.value|default_if_none:'' }}</textarea>
+					{% for error in customer_form.address.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}
+				</div>
+			</div>
+			<footer class="customer-form__actions">
+				<button class="customer-secondary-button" type="button" data-customer-close>Cancel</button>
+				<button class="customer-primary-button" type="submit" data-customer-submit>{% if active_modal == 'edit' %}Save changes{% else %}Add customer{% endif %}</button>
+			</footer>
+		</form>
+	</section>
+</div>
+
+<div class="customer-modal-backdrop" data-delete-backdrop>
+	<section class="customer-modal admin-confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="customer-delete-title" aria-describedby="customer-delete-description">
+		<header class="customer-modal__header"><div><h2 id="customer-delete-title">Delete customer?</h2><p id="customer-delete-description">This permanently removes the customer and their trip records. Related payments remain in history without customer or trip links.</p></div></header>
+		<form method="post" class="customer-form">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="customer_id" data-delete-id-field>
+			<footer class="customer-form__actions"><button class="customer-secondary-button" type="button" data-delete-cancel>Keep customer</button><button class="customer-primary-button admin-danger-button" type="submit">Delete customer</button></footer>
+		</form>
+	</section>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+	(() => {
+		const backdrop = document.querySelector('[data-customer-modal-backdrop]');
+		const deleteBackdrop = document.querySelector('[data-delete-backdrop]');
+		const deleteId = document.querySelector('[data-delete-id-field]');
+		const form = document.querySelector('[data-customer-form]');
+		const title = document.getElementById('customer-modal-title');
+		const action = document.querySelector('[data-customer-action]');
+		const customerId = document.querySelector('[data-customer-id]');
+		const imageInput = document.querySelector('[data-customer-image]');
+		const avatarPreview = document.querySelector('[data-avatar-preview]');
+		let previewObjectUrl = '';
+		const fields = {
+			first_name: document.getElementById('customer-first-name'),
+			last_name: document.getElementById('customer-last-name'),
+			gender: document.getElementById('customer-gender'),
+			phone_number: document.getElementById('customer-phone'),
+			email: document.getElementById('customer-email'),
+			address: document.getElementById('customer-address'),
+		};
+		const setAvatarPreview = (imageUrl) => {
+			if (previewObjectUrl) {
+				URL.revokeObjectURL(previewObjectUrl);
+				previewObjectUrl = '';
+			}
+			avatarPreview.replaceChildren();
+			if (imageUrl) {
+				const image = document.createElement('img');
+				image.src = imageUrl;
+				image.alt = '';
+				avatarPreview.append(image);
+				return;
+			}
+			const icon = document.createElement('i');
+			icon.className = 'bx bx-user';
+			icon.setAttribute('aria-hidden', 'true');
+			avatarPreview.append(icon);
+		};
+		const openModal = (mode, customer = null) => {
+			form.reset();
+			setAvatarPreview(customer?.image_url || '');
+			action.value = mode;
+			customerId.value = customer?.id || '';
+			title.textContent = mode === 'edit' ? 'Edit customer' : 'Add customer';
+			document.querySelector('[data-customer-submit]').textContent = mode === 'edit' ? 'Save changes' : 'Add customer';
+			Object.entries(fields).forEach(([name, field]) => {
+				field.value = customer ? customer[name] || '' : '';
+			});
+			backdrop.dataset.open = 'true';
+			fields.first_name.focus();
+		};
+		document.querySelector('[data-image-trigger]').addEventListener('click', () => imageInput.click());
+		imageInput.addEventListener('change', () => {
+			const [imageFile] = imageInput.files;
+			if (!imageFile) return;
+			const imageUrl = URL.createObjectURL(imageFile);
+			setAvatarPreview(imageUrl);
+			previewObjectUrl = imageUrl;
+		});
+		const closeModal = () => {
+			delete backdrop.dataset.open;
+		};
+
+		document.querySelector('[data-customer-add]').addEventListener('click', () => openModal('add'));
+		document.querySelectorAll('[data-customer-edit]').forEach((button) => {
+			button.addEventListener('click', () => openModal('edit', {
+				id: button.dataset.id,
+				first_name: button.dataset.firstName,
+				last_name: button.dataset.lastName,
+				gender: button.dataset.gender,
+				image_url: button.dataset.imageUrl,
+				phone_number: button.dataset.phone,
+				email: button.dataset.email,
+				address: button.dataset.address,
+			}));
+		});
+		document.querySelectorAll('[data-customer-close]').forEach((button) => button.addEventListener('click', closeModal));
+		document.querySelectorAll('[data-delete-open]').forEach((button) => button.addEventListener('click', () => {
+			deleteId.value = button.dataset.deleteId;
+			deleteBackdrop.dataset.open = 'true';
+		}));
+		document.querySelector('[data-delete-cancel]').addEventListener('click', () => delete deleteBackdrop.dataset.open);
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') {
+				delete backdrop.dataset.open;
+				delete deleteBackdrop.dataset.open;
+			}
+		});
+		backdrop.addEventListener('click', (event) => {
+			if (event.target === backdrop) closeModal();
+		});
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape' && backdrop.dataset.open) closeModal();
+		});
+
+		const search = document.querySelector('[data-customer-search]');
+		const rows = [...document.querySelectorAll('[data-customer-row]')];
+		const noResults = document.querySelector('[data-customer-no-results]');
+		const visibleCount = document.querySelector('[data-customer-visible]');
+		search.addEventListener('input', () => {
+			const query = search.value.trim().toLocaleLowerCase();
+			let visible = 0;
+			rows.forEach((row) => {
+				const matches = row.textContent.toLocaleLowerCase().includes(query);
+				row.hidden = !matches;
+				if (matches) visible += 1;
+			});
+			noResults.hidden = visible !== 0 || query.length === 0;
+			visibleCount.textContent = visible;
+		});
+	})();
+</script>
+{% endblock %}

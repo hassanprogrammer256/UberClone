@@ -1,9 +1,9 @@
 <tr>
-    <td><strong>{{ trip_id }}</strong><span>{{ trip_class }}</span></td>
-    <td><strong>{{ driver_name }}</strong><span><i class="bx bxs-star" aria-hidden="true"></i> {{ driver_rating }} ({{ driver_trip_count }} trips)</span></td>
+    <td><strong>{{ trip_id }}</strong></td>
+    <td><strong>{{ driver_name }}</strong><span><i class="bx bxs-star" aria-hidden="true"></i> {{ driver_trip_count }} trips</span></td>
     <td>{{ vehicle_name }}<small>{{ vehicle_plate }}</small></td>
     <td><span class="route-point">{{ route_from }}</span><span class="route-point route-point--blue">{{ route_to }}</span></td>
-    <td><strong>{{ trip_fare }}</strong><span>{{ fare_note }}</span></td>
+    <td><strong>{{ trip_fare }}</strong></td>
     <td><span class="payment-pill">{{ payment_method }}</span></td>
     <td>{% include "components/administrator/status_badge.html" with status_label=trip_status status_class=trip_status_class only %}</td>
 </tr>

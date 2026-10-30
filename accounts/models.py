@@ -73,7 +73,7 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
 
 
 class DriverProfile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='driver_profile')
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='driver_profile',null=True)
     date_of_birth = models.DateField()
     address = models.TextField()
 
@@ -87,7 +87,7 @@ class DriverProfile(models.Model):
 
 
 class CustomerProfile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='customer_profile')
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='customer_profile',null=True)
     address = models.TextField()
 
     class Meta:
@@ -98,7 +98,7 @@ class CustomerProfile(models.Model):
         return f"{self.user.full_name} "
 
 class AdminProfile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='admin_profile')
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='admin_profile',null=True)
 
     class Meta:
         verbose_name = 'Admin'
