@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{% block title %}Easy Rides Portal{% endblock %}</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://cdn.boxicons.com/3.0.8/fonts/basic/boxicons.min.css" rel="stylesheet">
+	<link href="https://cdn.boxicons.com/3.0.8/fonts/filled/boxicons-filled.min.css" rel="stylesheet">
+	<link href="https://cdn.boxicons.com/3.0.8/fonts/brands/boxicons-brands.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+	<link rel="stylesheet" href="{% static 'css/snackbar.css' %}">
+	{% block extra_head %}{% endblock %}
+</head>
+<body class="admin-body">
+	<div class="admin-shell">
+		<aside class="admin-sidebar" aria-label="Administration">
+			<a class="admin-brand" href="{%url 'admin_index'%}">
+				<img src="{% static 'images/logo.png' %}" alt="">
+				<span><strong>Easy Rides</strong><small>UGANDA</small></span>
+			</a>
+
+			<nav class="admin-nav" aria-label="Main navigation">
+				{%for item in side_nav%}
+				<a class="{% if tab == item.label %}is-active{% endif %}" href="{% url item.to %}"><i class="{{item.icon_class}}" aria-hidden="true"></i><span>{{item.label}}</span></a>
+				{%endfor%}
+
+				
+				{% comment %} <a href="#drivers"><i class="bx bx-steering-wheel" aria-hidden="true"></i><span>Drivers</span></a>
+				<a href="#trips"><i class="bx bx-car" aria-hidden="true"></i><span>Rides &amp; Trips</span></a>
+				<a href="#revenue"><i class="bx bx-wallet" aria-hidden="true"></i><span>Earnings &amp; Payouts</span></a>  {% endcomment %}
+			
+			</nav>
+			<div class="sidebar-profile admin-profile"><span class="profile-avatar" aria-hidden="true"><i class="bx bxs-user"></i>
+				{%if role == 'admin'%}
+			</span><span><strong>System Admin</strong><small>admin@easy-rides.ug</small></span>
+			{%elif role == 'customer'%}
+			</span><span><strong>Customer Portal</strong><small>customer Email</small></span>
+			{%else%}
+			</span><span><strong>Anonymous</strong><small>Unknown User</small></span>
+			{%endif%}
+		</div>
+		</aside>
+		<div class="admin-workspace">
+			<header class="admin-topbar">
+				<nav class="breadcrumbs" aria-label="Breadcrumb">
+					<a href="#home">Easy Rides</a><i class="bx bx-chevron-right" aria-hidden="true"></i><a href="#admin">Admin Portal</a><i class="bx bx-chevron-right" aria-hidden="true"></i><strong>{{tab}}</strong>
+				</nav>
+				<div class="topbar-actions">
+					
+					{% comment %} <button class="icon-button notification-button" type="button" aria-label="Notifications"><span class="bx bx-bell" aria-hidden="true"></span><i></i></button> {% endcomment %}
+					<form action="{% url 'logout' %}" method="post" style="display: inline;">
+    {% csrf_token %}
+    <button class="logout-button" type="submit">
+		<i class="bx bx-user" aria-hidden="true"></i>
+        Log out
+    </button>
+</form>
+
+				</div>
+			</header>
+			<main class="admin-main">{% block content %}{% endblock %}</main>
+		</div>
+	</div>
+	{% include "components/snackbar.html" %}
+	<script src="{% static 'js/main.js' %}"></script>
+	{% block page_scripts %}{% endblock %}
+</body>
+</html>

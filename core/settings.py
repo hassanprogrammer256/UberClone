@@ -2,6 +2,11 @@
 
 import os
 from pathlib import Path
+from datetime import timedelta
+import dj_database_url
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,13 +21,14 @@ SECRET_KEY = 'django-insecure-=38qjf4f+3%nh54awz%dxd3c^p1umm&u-cbq%2b1!(xq-xep55
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
 
+ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1']
 
 # Application definition
 
 INSTALLED_APPS = [
     # IN-BUILT_APPS
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -30,13 +36,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 # THIRD_PARTY_APPS 
-'crispy_forms','crispy_bootstrap4',
+'crispy_forms','crispy_bootstrap4','rest_framework',
 # LOCAL_APPS
-    'accounts'
+    'accounts','manager','api'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,15 +71,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4'  # or 'bootstrap4', 'bootstrap5', etc. depending on your preference
+CRISPY_TEMPLATE_PACK = 'bootstrap4' 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    is_postgresql = DATABASE_URL.startswith(('postgres://', 'postgresql://'))
+    require_database_ssl = os.environ.get('DB_SSL_REQUIRE', 'true').lower() in {'1', 'true', 'yes'}
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=is_postgresql and require_database_ssl,
+        )
     }
-}
-
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
@@ -108,7 +126,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
@@ -125,7 +143,34 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework_simplejwt.authentication.JWTAuthentication'],
+    
+    }
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': False,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+}
+AUTHENTICATION_BACKENDS = ['accounts.backends.EmailOrPhoneBackend']
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGOUT_REDIRECT_URL = 'index'
+LOGIN_REDIRECT_URL = 'index'
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+       "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}

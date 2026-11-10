@@ -1,0 +1,10 @@
+<article class="metric-card{% if metric_class %} {{ metric_class }}{% endif %}"{% if metric_id %} id="{{ metric_id }}"{% endif %}>
+    <div class="metric-card__top"><span>{{ metric_label }}</span><i class="bx {{ metric_icon }} metric-icon{% if metric_icon_class %} {{ metric_icon_class }}{% endif %}" aria-hidden="true"></i></div>
+    <strong class="metric-value">{{ metric_value }}</strong>
+    <p class="metric-note{% if metric_note_class %} {{ metric_note_class }}{% endif %}">
+        {% if metric_note_icon %}<i class="bx {{ metric_note_icon }}" aria-hidden="true"></i>{% endif %}
+        {% if metric_note_bold %}<b>{{ metric_note_bold }}</b>{% endif %}
+        {{ metric_note }}
+        {% if metric_note_detail %}<small>{{ metric_note_detail }}</small>{% endif %}
+    </p>
+</article>

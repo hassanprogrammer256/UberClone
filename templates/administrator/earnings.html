@@ -1,0 +1,143 @@
+{% extends "common/admin_base.html" %}
+{% load static %}
+
+{% block admin_title %}Earnings | Easy Rides Admin{% endblock %}
+{% block page_title %}Financial Management{% endblock %}
+{% block page_intro %}Track collected fares and payment activity{% endblock %}
+
+{% block admin_content %}
+<section class="customer-metrics" aria-label="Earnings overview">
+	<article class="customer-metric"><span class="customer-metric__icon customer-metric__icon--green"><i class="bx bx-wallet" aria-hidden="true"></i></span><div><p>Total collected</p><strong>UGX {{ total_revenue|floatformat:0 }}</strong></div></article>
+	<article class="customer-metric"><span class="customer-metric__icon"><i class="bx bx-receipt" aria-hidden="true"></i></span><div><p>Payments received</p><strong>{{ transaction_count }}</strong></div></article>
+	<article class="customer-metric"><span class="customer-metric__icon "><i class="bx bx-trending-up" aria-hidden="true"></i></span><div><p>Average payment</p><strong>UGX {{ average_payment|floatformat:0 }}</strong></div></article>
+</section>
+
+<section class="admin-chart-grid" aria-label="Financial analytics">
+	<article class="admin-chart-card">
+		<header class="admin-chart-card__header"><div><p class="customer-kicker">Revenue</p><h2>Collected by month</h2></div><i class="bx bx-bar-chart-alt-2" aria-hidden="true"></i></header>
+		<div class="admin-chart-card__plot"><canvas id="earnings-volume-chart" aria-label="Bar chart of monthly collected revenue" role="img"></canvas></div>
+	</article>
+	<article class="admin-chart-card">
+		<header class="admin-chart-card__header"><div><p class="customer-kicker">Payment mix</p><h2>By payment method</h2></div><i class="bx bx-pie-chart-alt-2" aria-hidden="true"></i></header>
+		<div class="admin-chart-card__plot admin-chart-card__plot--pie"><canvas id="payment-method-chart" aria-label="Pie chart of revenue by payment method" role="img"></canvas></div>
+	</article>
+</section>
+{{ earnings_month_labels|json_script:"earnings-month-labels" }}
+{{ earnings_month_values|json_script:"earnings-month-values" }}
+{{ payment_method_labels|json_script:"payment-method-labels" }}
+{{ payment_method_values|json_script:"payment-method-values" }}
+
+<section class="customer-directory" aria-labelledby="payments-directory-title">
+	<div class="customer-directory__heading">
+		<div><p class="customer-kicker">Transactions</p><h2 id="payments-directory-title">Payment history <span>{{ transaction_count }}</span></h2></div>
+		<label class="customer-search"><i class="bx bx-search" aria-hidden="true"></i><input type="search" placeholder="Search customer, method or trip" aria-label="Search payments" data-payment-search></label>
+	</div>
+	<div class="customer-table-scroll">
+		<table class="customer-table">
+			<thead><tr><th scope="col">Payment</th><th scope="col">Customer</th><th scope="col">Trip</th><th scope="col">Method</th><th scope="col">Date</th><th scope="col">Amount</th><th scope="col">Actions</th></tr></thead>
+			<tbody data-payment-rows>
+				{% for payment in payments %}
+				<tr data-payment-row>
+					<td>#{{ payment.pk }}</td>
+					<td>{{ payment.customer.user.full_name|default:payment.customer.user.email|default:"Unassigned" }}</td>
+					<td>{% if payment.trip_id %}#{{ payment.trip_id }}{% else %}Not linked{% endif %}</td>
+					<td>{{ payment.get_payment_method_display }}</td>
+					<td>{{ payment.payment_date|date:"M j, Y" }}</td>
+					<td class="customer-spend">UGX {{ payment.amount|floatformat:0 }}</td>
+					<td><div class="admin-row-actions">
+						<button class="customer-edit-button" type="button" aria-label="Edit payment {{ payment.pk }}" data-payment-edit
+							data-id="{{ payment.pk }}" data-customer="{{ payment.customer_id|default:'' }}" data-trip="{{ payment.trip_id|default:'' }}"
+							data-amount="{{ payment.amount }}" data-method="{{ payment.payment_method }}" data-date="{{ payment.payment_date|date:'Y-m-d' }}" data-time="{{ payment.payment_time|time:'H:i' }}">
+							<i class="bx bx-edit-alt" aria-hidden="true"></i></button>
+						<button class="customer-edit-button admin-delete-button" type="button" aria-label="Delete payment {{ payment.pk }}" data-delete-open data-delete-id="{{ payment.pk }}"><i class="bx bx-trash" aria-hidden="true"></i></button>
+					</div></td>
+				</tr>
+				{% empty %}<tr><td class="customer-empty" colspan="7">No payments have been recorded yet.</td></tr>{% endfor %}
+				<tr class="customer-empty" data-payment-empty hidden><td colspan="7">No payments match your search.</td></tr>
+			</tbody>
+		</table>
+	</div>
+	<footer class="customer-table-footer">Showing <strong data-payment-visible>{{ transaction_count }}</strong> of {{ transaction_count }} payments</footer>
+</section>
+
+<div class="customer-modal-backdrop" data-payment-modal-backdrop {% if active_modal %}data-open="true"{% endif %}>
+	<section class="customer-modal" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title" aria-describedby="payment-modal-description">
+		<header class="customer-modal__header"><div><h2 id="payment-modal-title">Edit payment</h2><p id="payment-modal-description">Update the customer, trip, payment method, date, time, or amount.</p></div><button class="customer-modal__close" type="button" aria-label="Close dialog" data-payment-close><i class="bx bx-x" aria-hidden="true"></i></button></header>
+		<form method="post" class="customer-form" data-payment-form>
+			{% csrf_token %}<input type="hidden" name="action" value="edit"><input type="hidden" name="payment_id" value="{{ payment_form.instance.pk|default:'' }}" data-payment-id>
+			{% if payment_form.non_field_errors %}<div class="customer-form__error" role="alert">{{ payment_form.non_field_errors }}</div>{% endif %}
+			<div class="customer-form__grid">
+				<div class="customer-field"><label for="id_customer">Customer</label>{{ payment_form.customer }}{% for error in payment_form.customer.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_trip">Trip</label>{{ payment_form.trip }}{% for error in payment_form.trip.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_payment_method">Payment method</label>{{ payment_form.payment_method }}{% for error in payment_form.payment_method.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_amount">Amount (UGX)</label>{{ payment_form.amount }}{% for error in payment_form.amount.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_payment_date">Payment date</label>{{ payment_form.payment_date }}{% for error in payment_form.payment_date.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_payment_time">Payment time</label>{{ payment_form.payment_time }}{% for error in payment_form.payment_time.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+			</div>
+			<footer class="customer-form__actions"><button class="customer-secondary-button" type="button" data-payment-close>Cancel</button><button class="customer-primary-button" type="submit">Save changes</button></footer>
+		</form>
+	</section>
+</div>
+
+<div class="customer-modal-backdrop" data-delete-backdrop>
+	<section class="customer-modal admin-confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="payment-delete-title" aria-describedby="payment-delete-description">
+		<header class="customer-modal__header"><div><h2 id="payment-delete-title">Delete payment?</h2><p id="payment-delete-description">This permanently removes the payment record and reduces the revenue totals and charts.</p></div></header>
+		<form method="post" class="customer-form">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="payment_id" data-delete-id-field>
+			<footer class="customer-form__actions"><button class="customer-secondary-button" type="button" data-delete-cancel>Keep payment</button><button class="customer-primary-button admin-danger-button" type="submit">Delete payment</button></footer>
+		</form>
+	</section>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+	(() => {
+		const paymentBackdrop = document.querySelector('[data-payment-modal-backdrop]');
+		const paymentForm = document.querySelector('[data-payment-form]');
+		const paymentId = document.querySelector('[data-payment-id]');
+		const paymentFields = Object.fromEntries(['customer', 'trip', 'amount', 'payment_method', 'payment_date', 'payment_time'].map((name) => [name, paymentForm.elements.namedItem(name)]));
+		document.querySelectorAll('[data-payment-edit]').forEach((button) => button.addEventListener('click', () => {
+			paymentId.value = button.dataset.id;
+			paymentFields.customer.value = button.dataset.customer;
+			paymentFields.trip.value = button.dataset.trip;
+			paymentFields.amount.value = button.dataset.amount;
+			paymentFields.payment_method.value = button.dataset.method;
+			paymentFields.payment_date.value = button.dataset.date;
+			paymentFields.payment_time.value = button.dataset.time;
+			paymentBackdrop.dataset.open = 'true';
+			paymentFields.customer.focus();
+		}));
+		document.querySelectorAll('[data-payment-close]').forEach((button) => button.addEventListener('click', () => delete paymentBackdrop.dataset.open));
+		paymentBackdrop.addEventListener('click', (event) => { if (event.target === paymentBackdrop) delete paymentBackdrop.dataset.open; });
+		const deleteBackdrop = document.querySelector('[data-delete-backdrop]');
+		const deleteId = document.querySelector('[data-delete-id-field]');
+		document.querySelectorAll('[data-delete-open]').forEach((button) => button.addEventListener('click', () => { deleteId.value = button.dataset.deleteId; deleteBackdrop.dataset.open = 'true'; }));
+		document.querySelector('[data-delete-cancel]').addEventListener('click', () => delete deleteBackdrop.dataset.open);
+		document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { delete paymentBackdrop.dataset.open; delete deleteBackdrop.dataset.open; } });
+		const readData = (id) => JSON.parse(document.getElementById(id).textContent);
+		const colors = ['#276ef1', '#18a06a', '#f0a52b', '#d64b5f'];
+		new Chart(document.getElementById('earnings-volume-chart'), {
+			type: 'bar',
+			data: { labels: readData('earnings-month-labels'), datasets: [{ data: readData('earnings-month-values'), backgroundColor: '#18a06a', borderRadius: 4, maxBarThickness: 34 }] },
+			options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: '#edf0f4' } } } }
+		});
+		new Chart(document.getElementById('payment-method-chart'), {
+			type: 'pie',
+			data: { labels: readData('payment-method-labels'), datasets: [{ data: readData('payment-method-values'), backgroundColor: colors, borderColor: '#fff', borderWidth: 3 }] },
+			options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 18 } } } }
+		});
+		const search = document.querySelector('[data-payment-search]');
+		const rows = [...document.querySelectorAll('[data-payment-row]')];
+		const empty = document.querySelector('[data-payment-empty]');
+		const visible = document.querySelector('[data-payment-visible]');
+		search.addEventListener('input', () => {
+			const query = search.value.trim().toLocaleLowerCase();
+			let count = 0;
+			rows.forEach((row) => { const matches = row.textContent.toLocaleLowerCase().includes(query); row.hidden = !matches; if (matches) count += 1; });
+			empty.hidden = count !== 0 || query.length === 0;
+			visible.textContent = count;
+		});
+	})();
+</script>
+{% endblock %}

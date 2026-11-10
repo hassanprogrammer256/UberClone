@@ -1,0 +1,150 @@
+{% extends "common/admin_base.html" %}
+{% load static %}
+
+{% block admin_title %}Trips | Easy Rides Admin{% endblock %}
+{% block page_title %}Trip Management{% endblock %}
+{% block page_intro %}Monitor ride activity, routes, and trip outcomes{% endblock %}
+
+{% block admin_content %}
+<section class="customer-metrics" aria-label="Trip overview">
+	<article class="customer-metric"><span class="customer-metric__icon"><i class="bx bx-car" aria-hidden="true"></i></span><div><p>All trips</p><strong>{{ trip_count }}</strong></div></article>
+	<article class="customer-metric"><span class="customer-metric__icon "><i class="bx bx-check-circle" aria-hidden="true"></i></span><div><p>Completed</p><strong>{{ completed_count }}</strong></div></article>
+	<article class="customer-metric"><span class="customer-metric__icon"><i class="bx bx-trending-up" aria-hidden="true"></i></span><div><p>In progress</p><strong>{{ in_progress_count }}</strong></div></article>
+</section>
+
+<section class="admin-chart-grid" aria-label="Trip analytics">
+	<article class="admin-chart-card">
+		<header class="admin-chart-card__header"><div><p class="customer-kicker">Volume</p><h2>Trips by month</h2></div><i class="bx bx-bar-chart-alt-2" aria-hidden="true"></i></header>
+		<div class="admin-chart-card__plot"><canvas id="trip-volume-chart" aria-label="Bar chart of trips by month" role="img"></canvas></div>
+	</article>
+	<article class="admin-chart-card">
+		<header class="admin-chart-card__header"><div><p class="customer-kicker">Outcomes</p><h2>Trip status</h2></div><i class="bx bx-pie-chart-alt-2" aria-hidden="true"></i></header>
+		<div class="admin-chart-card__plot admin-chart-card__plot--pie"><canvas id="trip-status-chart" aria-label="Pie chart of trip statuses" role="img"></canvas></div>
+	</article>
+</section>
+{{ trip_month_labels|json_script:"trip-month-labels" }}
+{{ trip_month_values|json_script:"trip-month-values" }}
+{{ trip_status_labels|json_script:"trip-status-labels" }}
+{{ trip_status_values|json_script:"trip-status-values" }}
+
+<section class="customer-directory" aria-labelledby="trips-directory-title">
+	<div class="customer-directory__heading">
+		<div><p class="customer-kicker">Ride activity</p><h2 id="trips-directory-title">All trips <span>{{ trip_count }}</span></h2></div>
+		<label class="customer-search"><i class="bx bx-search" aria-hidden="true"></i><input type="search" placeholder="Search rider, driver, route or status" aria-label="Search trips" data-trip-search></label>
+	</div>
+	<div class="customer-table-scroll">
+		<table class="customer-table">
+			<thead><tr><th scope="col">Trip</th><th scope="col">Route</th><th scope="col">Customer</th><th scope="col">Driver</th><th scope="col">Vehicle</th><th scope="col">Date</th><th scope="col">Fare</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead>
+			<tbody data-trip-rows>
+				{% for trip in trips %}
+				<tr data-trip-row>
+					<td>#{{ trip.pk }}</td>
+					<td>{{ trip.origin }} <span class="admin-route-arrow">to</span> {{ trip.destination }}</td>
+					<td>{{ trip.customer.user.full_name|default:trip.customer.user.email|default:"Guest" }}</td>
+					<td>{{ trip.driver.user.full_name|default:trip.driver.user.email }}</td>
+					<td>{{ trip.vehicle.plate_number|default:"Not assigned" }}</td>
+					<td>{{ trip.trip_date|date:"M j, Y" }}</td>
+					<td class="customer-spend">{% if trip.fare != None %}UGX {{ trip.fare|floatformat:0 }}{% else %}Unpaid{% endif %}</td>
+					<td><span class="admin-status admin-status--{{ trip.status }}">{{ trip.get_status_display }}</span></td>
+					<td><div class="admin-row-actions">
+						<button class="customer-edit-button" type="button" aria-label="Edit trip {{ trip.pk }}" data-trip-edit
+							data-id="{{ trip.pk }}" data-customer="{{ trip.customer_id|default:'' }}" data-driver="{{ trip.driver_id }}"
+							data-vehicle="{{ trip.vehicle_id|default:'' }}" data-origin="{{ trip.origin_id }}" data-destination="{{ trip.destination_id }}"
+							data-date="{{ trip.trip_date|date:'Y-m-d' }}" data-time="{{ trip.requested_at|time:'H:i' }}" data-status="{{ trip.status }}">
+							<i class="bx bx-edit-alt" aria-hidden="true"></i></button>
+						<button class="customer-edit-button admin-delete-button" type="button" aria-label="Delete trip {{ trip.pk }}" data-delete-open data-delete-id="{{ trip.pk }}"><i class="bx bx-trash" aria-hidden="true"></i></button>
+					</div></td>
+				</tr>
+				{% empty %}<tr><td class="customer-empty" colspan="9">No trips have been recorded yet.</td></tr>{% endfor %}
+				<tr class="customer-empty" data-trip-empty hidden><td colspan="9">No trips match your search.</td></tr>
+			</tbody>
+		</table>
+	</div>
+	<footer class="customer-table-footer">Showing <strong data-trip-visible>{{ trip_count }}</strong> of {{ trip_count }} trips</footer>
+</section>
+
+<div class="customer-modal-backdrop" data-trip-modal-backdrop {% if active_modal %}data-open="true"{% endif %}>
+	<section class="customer-modal" role="dialog" aria-modal="true" aria-labelledby="trip-modal-title" aria-describedby="trip-modal-description">
+		<header class="customer-modal__header"><div><h2 id="trip-modal-title">Edit trip</h2><p id="trip-modal-description">Update the route, assignment, schedule, or status.</p></div><button class="customer-modal__close" type="button" aria-label="Close dialog" data-trip-close><i class="bx bx-x" aria-hidden="true"></i></button></header>
+		<form method="post" class="customer-form" data-trip-form>
+			{% csrf_token %}<input type="hidden" name="action" value="edit"><input type="hidden" name="trip_id" value="{{ trip_form.instance.pk|default:'' }}" data-trip-id>
+			{% if trip_form.non_field_errors %}<div class="customer-form__error" role="alert">{{ trip_form.non_field_errors }}</div>{% endif %}
+			<div class="customer-form__grid">
+				<div class="customer-field"><label for="id_customer">Customer</label>{{ trip_form.customer }}{% for error in trip_form.customer.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_driver">Driver</label>{{ trip_form.driver }}{% for error in trip_form.driver.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_vehicle">Vehicle</label>{{ trip_form.vehicle }}{% for error in trip_form.vehicle.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_status">Status</label>{{ trip_form.status }}{% for error in trip_form.status.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_origin">Origin</label>{{ trip_form.origin }}{% for error in trip_form.origin.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_destination">Destination</label>{{ trip_form.destination }}{% for error in trip_form.destination.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_trip_date">Trip date</label>{{ trip_form.trip_date }}{% for error in trip_form.trip_date.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+				<div class="customer-field"><label for="id_requested_at">Requested time</label>{{ trip_form.requested_at }}{% for error in trip_form.requested_at.errors %}<small class="customer-field__error">{{ error }}</small>{% endfor %}</div>
+			</div>
+			<footer class="customer-form__actions"><button class="customer-secondary-button" type="button" data-trip-close>Cancel</button><button class="customer-primary-button" type="submit">Save changes</button></footer>
+		</form>
+	</section>
+</div>
+
+<div class="customer-modal-backdrop" data-delete-backdrop>
+	<section class="customer-modal admin-confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="trip-delete-title" aria-describedby="trip-delete-description">
+		<header class="customer-modal__header"><div><h2 id="trip-delete-title">Delete trip?</h2><p id="trip-delete-description">This permanently removes the trip. Any payment history remains and will no longer link to this trip.</p></div></header>
+		<form method="post" class="customer-form">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="trip_id" data-delete-id-field>
+			<footer class="customer-form__actions"><button class="customer-secondary-button" type="button" data-delete-cancel>Keep trip</button><button class="customer-primary-button admin-danger-button" type="submit">Delete trip</button></footer>
+		</form>
+	</section>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+	(() => {
+		const tripBackdrop = document.querySelector('[data-trip-modal-backdrop]');
+		const tripForm = document.querySelector('[data-trip-form]');
+		const tripId = document.querySelector('[data-trip-id]');
+		const tripFields = Object.fromEntries(['customer', 'driver', 'vehicle', 'origin', 'destination', 'trip_date', 'requested_at', 'status'].map((name) => [name, tripForm.elements.namedItem(name)]));
+		document.querySelectorAll('[data-trip-edit]').forEach((button) => button.addEventListener('click', () => {
+			tripId.value = button.dataset.id;
+			tripFields.customer.value = button.dataset.customer;
+			tripFields.driver.value = button.dataset.driver;
+			tripFields.vehicle.value = button.dataset.vehicle;
+			tripFields.origin.value = button.dataset.origin;
+			tripFields.destination.value = button.dataset.destination;
+			tripFields.trip_date.value = button.dataset.date;
+			tripFields.requested_at.value = button.dataset.time;
+			tripFields.status.value = button.dataset.status;
+			tripBackdrop.dataset.open = 'true';
+			tripFields.customer.focus();
+		}));
+		document.querySelectorAll('[data-trip-close]').forEach((button) => button.addEventListener('click', () => delete tripBackdrop.dataset.open));
+		tripBackdrop.addEventListener('click', (event) => { if (event.target === tripBackdrop) delete tripBackdrop.dataset.open; });
+		const deleteBackdrop = document.querySelector('[data-delete-backdrop]');
+		const deleteId = document.querySelector('[data-delete-id-field]');
+		document.querySelectorAll('[data-delete-open]').forEach((button) => button.addEventListener('click', () => { deleteId.value = button.dataset.deleteId; deleteBackdrop.dataset.open = 'true'; }));
+		document.querySelector('[data-delete-cancel]').addEventListener('click', () => delete deleteBackdrop.dataset.open);
+		document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { delete tripBackdrop.dataset.open; delete deleteBackdrop.dataset.open; } });
+		const readData = (id) => JSON.parse(document.getElementById(id).textContent);
+		const colors = ['#276ef1', '#18a06a', '#f0a52b'];
+		new Chart(document.getElementById('trip-volume-chart'), {
+			type: 'bar',
+			data: { labels: readData('trip-month-labels'), datasets: [{ data: readData('trip-month-values'), backgroundColor: '#276ef1', borderRadius: 4, maxBarThickness: 34 }] },
+			options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#edf0f4' } } } }
+		});
+		new Chart(document.getElementById('trip-status-chart'), {
+			type: 'pie',
+			data: { labels: readData('trip-status-labels'), datasets: [{ data: readData('trip-status-values'), backgroundColor: colors, borderColor: '#fff', borderWidth: 3 }] },
+			options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 18 } } } }
+		});
+		const search = document.querySelector('[data-trip-search]');
+		const rows = [...document.querySelectorAll('[data-trip-row]')];
+		const empty = document.querySelector('[data-trip-empty]');
+		const visible = document.querySelector('[data-trip-visible]');
+		search.addEventListener('input', () => {
+			const query = search.value.trim().toLocaleLowerCase();
+			let count = 0;
+			rows.forEach((row) => { const matches = row.textContent.toLocaleLowerCase().includes(query); row.hidden = !matches; if (matches) count += 1; });
+			empty.hidden = count !== 0 || query.length === 0;
+			visible.textContent = count;
+		});
+	})();
+</script>
+{% endblock %}

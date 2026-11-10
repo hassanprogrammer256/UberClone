@@ -1,121 +1,115 @@
-from django.forms import ModelForm
 from django import forms
+from django.contrib.auth import get_user_model, password_validation
 from django.core.exceptions import ValidationError
-from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from .models import Customer, CustomUser, Driver
 
-class RegisterForm(UserCreationForm):
-    class Meta:
-        model = CustomUser
-        fields = ['username', 'email', 'first_name', 'last_name', 'phone_number', 'image']
+from api.models import Location
 
-class DriverForm(ModelForm):
-    class Meta:
-        model = Driver
-        fields = ['image','username', 'email', 'first_name', 'last_name', 'phone_number', 'password']
 
-class CustomerForm(ModelForm):
-    username = forms.CharField(required=False, widget=forms.HiddenInput)
-    terms = forms.BooleanField(required=True)
-    marketing = forms.BooleanField(required=False)
-    confirm_password = forms.CharField(
-        strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
-    )
+class RegistrationForm(forms.Form):
+	role = forms.ChoiceField(
+		choices=(('customer', 'Customer'), ('driver', 'Driver')),
+		widget=forms.HiddenInput(),
+	)
+	first_name = forms.CharField(
+		max_length=30,
+		widget=forms.TextInput(attrs={
+			'class': 'uber-field',
+			'autocomplete': 'given-name',
+			'required': True,
+		}),
+	)
+	last_name = forms.CharField(
+		max_length=30,
+		widget=forms.TextInput(attrs={
+			'class': 'uber-field',
+			'autocomplete': 'family-name',
+			'required': True,
+		}),
+	)
+	email = forms.EmailField(
+		widget=forms.EmailInput(attrs={
+			'class': 'uber-field',
+			'autocomplete': 'email',
+			'required': True,
+		}),
+	)
+	phone_number = forms.CharField(
+		max_length=15,
+		widget=forms.TelInput(attrs={
+			'class': 'uber-field',
+			'autocomplete': 'tel',
+			'required': True,
+		}),
+	)
+	date_of_birth = forms.DateField(
+		widget=forms.DateInput(attrs={
+			'class': 'uber-field',
+			'type': 'date',
+			'autocomplete': 'bday',
+			'required': True,
+		}),
+	)
+	image = forms.ImageField(
+		required=False,
+		widget=forms.ClearableFileInput(attrs={
+			'class': 'auth-avatar-input',
+			'accept': 'image/jpeg,image/png,image/webp',
+		}),
+	)
+	password = forms.CharField(
+		widget=forms.PasswordInput(attrs={
+			'class': 'uber-field',
+			'autocomplete': 'new-password',
+			'required': True,
+		}),
+	)
+	confirm_password = forms.CharField(
+		widget=forms.PasswordInput(attrs={
+			'class': 'uber-field',
+			'autocomplete': 'new-password',
+			'required': True,
+		}),
+	)
+	location = forms.ModelChoiceField(
+		queryset=Location.objects.all(),
+		empty_label='Select a location',
+		widget=forms.Select(attrs={'class': 'uber-field'}),
+	)
+	terms = forms.BooleanField(required=True)
+	marketing = forms.BooleanField(required=False)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['image'].widget.attrs.update({
-            'accept': 'image/jpeg,image/png,image/webp',
-            'class': 'auth-avatar-input',
-            'aria-label': 'Choose a profile photo',
-            'aria-hidden': 'true',
-            'tabindex': '-1',
-        })
+	def __init__(self, *args, role='customer', **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['role'].initial = role
+		self.fields['date_of_birth'].required = role == 'driver'
 
-    class Meta:
-        model = Customer
-        fields = ['image', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'password', 'confirm_password', 'terms', 'marketing']
+    
 
-    def clean(self):
-        cleaned_data = super().clean()
-        email = cleaned_data.get('email', '')
-        username = cleaned_data.get('username', '').strip()
+	def clean_email(self):
+		email = self.cleaned_data['email'].strip().lower()
+		if get_user_model().objects.filter(email__iexact=email).exists():
+			raise ValidationError('An account with this email address already exists.')
+		return email
 
-        if not username and email:
-            username = email.split('@', 1)[0]
-            base_username = username
-            suffix = 1
-            while CustomUser.objects.filter(username=username).exists():
-                username = f'{base_username}{suffix}'
-                suffix += 1
-            cleaned_data['username'] = username
+	def clean_phone_number(self):
+		phone_number = self.cleaned_data['phone_number'].strip()
+		if get_user_model().objects.filter(phone_number=phone_number).exists():
+			raise ValidationError('An account with this phone number already exists.')
+		return phone_number
 
-        password = cleaned_data.get('password')
-        confirm_password = cleaned_data.get('confirm_password')
-        if password and confirm_password and password != confirm_password:
-            self.add_error('confirm_password', 'Passwords do not match.')
+	def clean(self):
+		cleaned_data = super().clean()
+		password = cleaned_data.get('password')
+		confirm_password = cleaned_data.get('confirm_password')
 
-        return cleaned_data
+		if password and confirm_password and password != confirm_password:
+			self.add_error('confirm_password', 'Passwords do not match.')
+		if password:
+			try:
+				password_validation.validate_password(password)
+			except ValidationError as error:
+				self.add_error('password', error)
 
-    def clean_password(self):
-        password = self.cleaned_data['password']
-        if not any(character.isdigit() for character in password):
-            raise forms.ValidationError('Include at least one number.')
-        if not any(not character.isalnum() for character in password):
-            raise forms.ValidationError('Include at least one symbol.')
-        try:
-            validate_password(password, self.instance)
-        except ValidationError as error:
-            raise forms.ValidationError(error.messages) from error
-        return password
+		return cleaned_data
 
-    def save(self, commit=True):
-        customer = super().save(commit=False)
-        customer.set_password(self.cleaned_data['password'])
-        if commit:
-            customer.save()
-        return customer
-
-class LoginForm(AuthenticationForm):
-    def clean_username(self):
-        identifier = self.cleaned_data['username'].strip()
-        user = CustomUser.objects.filter(username=identifier).first()
-
-        if user is None and '@' in identifier:
-            email_matches = list(CustomUser.objects.filter(email__iexact=identifier)[:2])
-            if len(email_matches) == 1:
-                user = email_matches[0]
-
-        if user is None:
-            phone_matches = list(
-                CustomUser.objects.filter(phone_number__in=self._phone_candidates(identifier))[:2]
-            )
-            if len(phone_matches) == 1:
-                user = phone_matches[0]
-
-        return user.get_username() if user is not None else identifier
-
-    @staticmethod
-    def _phone_candidates(identifier):
-        digits = ''.join(character for character in identifier if character.isdigit())
-        if digits.startswith('00'):
-            digits = digits[2:]
-
-        local_digits = digits[3:] if digits.startswith('256') else digits
-        if local_digits.startswith('0'):
-            local_digits = local_digits[1:]
-
-        candidates = {identifier, digits}
-        if local_digits:
-            candidates.update({
-                f'0{local_digits}',
-                f'256{local_digits}',
-                f'+256{local_digits}',
-            })
-        return candidates
-
-    class Meta:
-        model = CustomUser  
-        fields = ['username', 'password']
+	

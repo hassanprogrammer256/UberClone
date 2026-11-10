@@ -1,179 +1,155 @@
-from io import BytesIO
+import io
+from contextlib import redirect_stdout
+from io import StringIO
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
-from PIL import Image
+from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.test import TestCase
-from django.test import override_settings
-from .models import CustomUser
+from django.urls import reverse
+from PIL import Image
 
-class AccountsTestCase(TestCase):
-
-    def test_register_view(self):
-        get_response = self.client.get('/auth/register/')
-        self.assertEqual(get_response.status_code, 200)
-        self.assertTemplateUsed(get_response, 'auth/register.html')
-        print("Register GET view test passed.")
-        post_response = self.client.post('/auth/register/', {
-            'username': 'testuser',
-            'email': 'testuser@example.com',
-            'first_name': 'Test',
-            'last_name': 'User',}
-        )
-        self.assertEqual(post_response.status_code, 200)
-        print("Register POST view test passed.")
+from api.models import Location
+from accounts.models import CustomerProfile, DriverProfile
 
 
+class CustomSuperuserCommandTests(TestCase):
+	@patch('accounts.management.commands.createcustomsuperuser.getpass', side_effect=['Secure-test-pass-2026!', 'Secure-test-pass-2026!'])
+	@patch('builtins.input', side_effect=['admin@example.com', '+256700000777'])
+	def test_command_creates_admin_superuser(self, mocked_input, mocked_getpass):
+		output = StringIO()
 
-    def test_login_view(self):
-        get_response = self.client.get('/auth/login/')
-        self.assertEqual(get_response.status_code, 200)
-        self.assertTemplateUsed(get_response, 'auth/login.html')
-        print("Login GET view test passed.")
-        post_response = self.client.post('/auth/login/', {
-            'username': 'testuser',
-            'password': 'testpassword'
-        })
-        self.assertEqual(post_response.status_code, 200)
-        print("Login POST view test passed.")
+		call_command('createcustomsuperuser', stdout=output)
 
-    def test_login_with_email(self):
-        user = CustomUser.objects.create_user(
-            username='emailuser',
-            email='Driver@example.com',
-            password='StrongPass123!',
-            phone_number='+256700123456',
-        )
+		user = get_user_model().objects.get(email='admin@example.com')
+		self.assertEqual(user.phone_number, '+256700000777')
+		self.assertEqual(user.role, 'admin')
+		self.assertTrue(user.is_staff)
+		self.assertTrue(user.is_superuser)
+		self.assertTrue(user.check_password('Secure-test-pass-2026!'))
+		self.assertIn('created successfully', output.getvalue())
 
-        response = self.client.post('/auth/login/', {
-            'username': 'Driver@example.com',
-            'password': 'StrongPass123!',
-        })
 
-        self.assertRedirects(response, '/')
-        self.assertEqual(response.wsgi_request.user.pk, user.pk)
+class RegistrationTests(TestCase):
+	def setUp(self):
+		self.location = Location.objects.create(name='Kampala', lat='0.3476', long='32.5825')
 
-    def test_login_with_local_phone_number(self):
-        user = CustomUser.objects.create_user(
-            username='phoneuser',
-            email='phoneuser@example.com',
-            password='StrongPass123!',
-            phone_number='+256700123456',
-        )
+	def test_registration_form_uses_locations_from_database(self):
+		response = self.client.get(reverse('register'), {'role': 'driver'})
 
-        response = self.client.post('/auth/login/', {
-            'username': '0700123456',
-            'password': 'StrongPass123!',
-        })
+		self.assertEqual(response.status_code, 200)
+		self.assertQuerySetEqual(
+			response.context['form'].fields['location'].queryset,
+			[repr(self.location)],
+			transform=repr,
+		)
+		self.assertContains(response, 'name="image"')
+		self.assertContains(response, 'name="first_name"')
+		self.assertContains(response, 'name="email"')
+		self.assertContains(response, 'name="role" value="driver"')
 
-        self.assertRedirects(response, '/')
-        self.assertEqual(response.wsgi_request.user.pk, user.pk)
+	def test_registration_creates_user_and_saves_selected_location(self):
+		image_data = io.BytesIO()
+		Image.new('RGB', (1, 1), color='white').save(image_data, format='PNG')
 
-    def test_login_with_username_still_works(self):
-        user = CustomUser.objects.create_user(
-            username='existinguser',
-            email='existinguser@example.com',
-            password='StrongPass123!',
-        )
+		with TemporaryDirectory() as media_root:
+			with self.settings(MEDIA_ROOT=media_root):
+				response = self.client.post(
+						reverse('register') + '?role=driver',
+					{
+						'first_name': 'Alex',
+						'last_name': 'Rider',
+						'email': 'alex@example.com',
+						'phone_number': '+256700000321',
+						'date_of_birth': '1990-01-01',
+						'password': 'Long-enough!2026',
+						'confirm_password': 'Long-enough!2026',
+						'location': str(self.location.pk),
+						'terms': 'on',
+						'image': SimpleUploadedFile(
+							'profile.png', image_data.getvalue(), content_type='image/png'
+						),
+					},
+				)
 
-        response = self.client.post('/auth/login/', {
-            'username': user.username,
-            'password': 'StrongPass123!',
-        })
+				self.assertRedirects(response, reverse('login'))
+				user = get_user_model().objects.get(email='alex@example.com')
+				self.assertEqual(user.first_name, 'Alex')
+				self.assertEqual(user.role, 'driver')
+				self.assertTrue(user.check_password('Long-enough!2026'))
+				self.assertTrue(user.image.storage.exists(user.image.name))
+				profile = DriverProfile.objects.get(user=user)
+				self.assertEqual(profile.address, 'Kampala')
+				self.assertEqual(str(profile.date_of_birth), '1990-01-01')
 
-        self.assertRedirects(response, '/')
-        self.assertEqual(response.wsgi_request.user.pk, user.pk)
+	def test_customer_role_from_query_creates_customer_profile(self):
+		response = self.client.post(
+			reverse('register') + '?role=customer',
+			{
+				'role': 'driver',
+				'first_name': 'Casey',
+				'last_name': 'Passenger',
+				'email': 'casey@example.com',
+				'phone_number': '+256700000654',
+				'password': 'Long-enough!2026',
+				'confirm_password': 'Long-enough!2026',
+				'location': str(self.location.pk),
+				'terms': 'on',
+			},
+		)
 
-    def test_invalid_login_keeps_password_step_open(self):
-        CustomUser.objects.create_user(
-            username='retryuser',
-            email='retry@example.com',
-            password='StrongPass123!',
-        )
+		self.assertRedirects(response, reverse('login'))
+		user = get_user_model().objects.get(email='casey@example.com')
+		self.assertEqual(user.role, 'customer')
+		self.assertEqual(CustomerProfile.objects.get(user=user).address, 'Kampala')
+		self.assertFalse(DriverProfile.objects.filter(user=user).exists())
 
-        response = self.client.post('/auth/login/', {
-            'username': 'retry@example.com',
-            'password': 'incorrect-password',
-        })
+	def test_invalid_registration_shows_message_and_prints_errors(self):
+		terminal_output = StringIO()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Invalid username or password.')
-        self.assertNotContains(response, 'id="password-step" hidden')
-        self.assertNotIn('_auth_user_id', self.client.session)
+		with redirect_stdout(terminal_output):
+			response = self.client.post(reverse('register') + '?role=customer', {})
 
-    def test_registered_user_can_sign_in_with_email(self):
-        password = 'StrongPass123!'
-        registration_response = self.client.post('/auth/register/', {
-            'username': 'newDriver@example.com',
-            'email': 'newDriver@example.com',
-            'first_name': 'New',
-            'last_name': 'Driver',
-            'phone_number': '0700123456',
-            'password': password,
-            'confirm_password': password,
-            'terms': 'on',
-        })
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'data-server-snackbar')
+		self.assertContains(response, 'Please correct the highlighted errors and try again.')
+		self.assertContains(response, 'This field is required.')
+		self.assertIn('Registration validation failed (role=customer)', terminal_output.getvalue())
+		self.assertIn('This field is required.', terminal_output.getvalue())
 
-        self.assertRedirects(registration_response, '/auth/login/')
-        user = CustomUser.objects.get(email='newDriver@example.com')
-        self.assertTrue(user.check_password(password))
 
-        login_response = self.client.post('/auth/login/', {
-            'username': 'newDriver@example.com',
-            'password': password,
-        })
+class LoginSnackbarTests(TestCase):
+	def test_failed_login_shows_error_snackbar(self):
+		response = self.client.post(
+			reverse('login'),
+			{'username': 'missing@example.invalid', 'password': 'incorrect'},
+		)
 
-        self.assertRedirects(login_response, '/')
-        self.assertEqual(login_response.wsgi_request.user.pk, user.pk)
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'data-server-snackbar')
+		self.assertContains(response, 'data-type="error"')
+		self.assertContains(response, 'Sign-in failed.')
 
-    def test_registration_enforces_terms_and_password_requirements(self):
-        response = self.client.post('/auth/register/', {
-            'email': 'policyuser@example.com',
-            'first_name': 'Policy',
-            'last_name': 'User',
-            'password': 'passwordonly',
-        })
+	def test_successful_login_shows_success_snackbar_after_redirect(self):
+		user = get_user_model().objects.create_user(
+			phone_number='+256700000123',
+			email='snackbar-test@example.com',
+			password='test-password-123',
+		)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('terms', response.context['form'].errors)
-        self.assertIn('password', response.context['form'].errors)
-        self.assertFalse(CustomUser.objects.filter(email='policyuser@example.com').exists())
+		response = self.client.post(
+			reverse('login'),
+			{
+				'username': user.email,
+				'password': 'test-password-123',
+				'next': '/',
+			},
+			follow=True,
+		)
 
-    def test_registration_uploads_profile_photo(self):
-        image_file = BytesIO()
-        Image.new('RGB', (8, 8), color='blue').save(image_file, format='PNG')
-        image_file.seek(0)
-        uploaded_image = SimpleUploadedFile(
-            'avatar.png', image_file.read(), content_type='image/png'
-        )
-
-        with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
-            response = self.client.post('/auth/register/', {
-                'email': 'avataruser@example.com',
-                'first_name': 'Avatar',
-                'last_name': 'User',
-                'password': 'StrongPass123!',
-                'confirm_password': 'StrongPass123!',
-                'terms': 'on',
-                'image': uploaded_image,
-            })
-
-            self.assertRedirects(response, '/auth/login/')
-            user = CustomUser.objects.get(email='avataruser@example.com')
-            self.assertTrue(user.image.name.startswith('profile_images/'))
-            self.assertTrue(user.image.storage.exists(user.image.name))
-
-    def test_registration_rejects_mismatched_passwords(self):
-        response = self.client.post('/auth/register/', {
-            'email': 'mismatch@example.com',
-            'first_name': 'Mismatch',
-            'last_name': 'Password',
-            'password': 'StrongPass123!',
-            'confirm_password': 'DifferentPass123!',
-            'terms': 'on',
-        })
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('confirm_password', response.context['form'].errors)
-        self.assertFalse(CustomUser.objects.filter(email='mismatch@example.com').exists())
-
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'data-server-snackbar')
+		self.assertContains(response, 'data-type="success"')
+		self.assertContains(response, 'You are signed in.')
