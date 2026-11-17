@@ -8,11 +8,13 @@ class EmailOrPhoneBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None:
             return None
-            
-        try:
-            user = User.objects.get(Q(email__iexact=username) | Q(phone_number=username))
-        except User.DoesNotExist:
-            return None
-        if user.check_password(password) and self.user_can_authenticate(user):
-            return user
+
+        users = User.objects.filter(
+            Q(username__iexact=username)
+            | Q(email__iexact=username)
+            | Q(phone_number=username)
+        )
+        for user in users:
+            if user.check_password(password) and self.user_can_authenticate(user):
+                return user
         return None

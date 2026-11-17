@@ -46,6 +46,11 @@
                     </div>
                 </div>
                 <div class="auth-form-field">
+                    <label class="uber-label" for="{{ form.username.id_for_label }}">Username</label>
+                    {{ form.username }}
+                    {% for error in form.username.errors %}<span class="uber-help" role="alert">{{ error }}</span>{% endfor %}
+                </div>
+                <div class="auth-form-field">
                     <div class="auth-field-heading"><label class="uber-label" for="{{ form.email.id_for_label }}">Email Address</label></div>
                     {{ form.email }}
                     {% for error in form.email.errors %}<span class="uber-help" role="alert">{{ error }}</span>{% endfor %}
