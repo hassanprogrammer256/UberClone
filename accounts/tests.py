@@ -28,6 +28,7 @@ class RegistrationTests(TestCase):
 		)
 		self.assertContains(response, 'name="image"')
 		self.assertContains(response, 'name="first_name"')
+		self.assertContains(response, 'name="username"')
 		self.assertContains(response, 'name="email"')
 		self.assertContains(response, 'name="role" value="driver"')
 
@@ -42,6 +43,7 @@ class RegistrationTests(TestCase):
 					{
 						'first_name': 'Alex',
 						'last_name': 'Rider',
+						'username': 'alexrider',
 						'email': 'alex@example.com',
 						'phone_number': '+256700000321',
 						'date_of_birth': '1990-01-01',
@@ -58,6 +60,7 @@ class RegistrationTests(TestCase):
 				self.assertRedirects(response, reverse('login'))
 				user = get_user_model().objects.get(email='alex@example.com')
 				self.assertEqual(user.first_name, 'Alex')
+				self.assertEqual(user.username, 'alexrider')
 				self.assertEqual(user.role, 'driver')
 				self.assertTrue(user.check_password('Long-enough!2026'))
 				self.assertTrue(user.image.storage.exists(user.image.name))
@@ -72,6 +75,7 @@ class RegistrationTests(TestCase):
 				'role': 'driver',
 				'first_name': 'Casey',
 				'last_name': 'Passenger',
+				'username': 'caseypassenger',
 				'email': 'casey@example.com',
 				'phone_number': '+256700000654',
 				'password': 'Long-enough!2026',
@@ -102,6 +106,16 @@ class RegistrationTests(TestCase):
 
 
 class LoginSnackbarTests(TestCase):
+	def test_superuser_creation_generates_a_username(self):
+		user = get_user_model().objects.create_superuser(
+			phone_number='+256700000789',
+			email='admin-user@example.com',
+			password='test-password-123',
+		)
+
+		self.assertEqual(user.username, 'admin-user')
+		self.assertTrue(user.is_superuser)
+
 	def test_failed_login_shows_error_snackbar(self):
 		response = self.client.post(
 			reverse('login'),
@@ -134,3 +148,18 @@ class LoginSnackbarTests(TestCase):
 		self.assertContains(response, 'data-server-snackbar')
 		self.assertContains(response, 'data-type="success"')
 		self.assertContains(response, 'You are signed in.')
+
+	def test_successful_login_accepts_username(self):
+		user = get_user_model().objects.create_user(
+			phone_number='+256700000456',
+			email='username-test@example.com',
+			username='test-rider',
+			password='test-password-123',
+		)
+
+		response = self.client.post(
+			reverse('login'),
+			{'username': user.username, 'password': 'test-password-123', 'next': '/'},
+		)
+
+		self.assertRedirects(response, '/')
