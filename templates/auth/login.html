@@ -27,7 +27,7 @@
 
         <section class="auth-auth-card" aria-labelledby="login-title">
             <span class="auth-eyebrow">Sign in</span>
-            <h1 class="auth-heading" id="login-title">What's your phone number or email?</h1>
+            <h1 class="auth-heading" id="login-title">Sign in with your username, phone, or email</h1>
             <p class="auth-copy">Sign in to access your rides, orders, and earnings.</p>
 
             <form class="auth-form" method="post" action="{% url 'login' %}" id="login-form">
@@ -35,11 +35,12 @@
                 <div class="auth-tabs" role="tablist" aria-label="Sign-in method">
                     <button class="auth-tab" type="button" role="tab" aria-selected="true" data-login-mode="phone">Phone Number</button>
                     <button class="auth-tab" type="button" role="tab" aria-selected="false" data-login-mode="email">Email Address</button>
+                    <button class="auth-tab" type="button" role="tab" aria-selected="false" data-login-mode="username">Username</button>
                 </div>
                 <div class="auth-form-field">
                     <label class="uber-label" for="{{ form.username.id_for_label }}" id="identifier-label">Mobile Number</label>
                     <div class="auth-identifier-control" id="identifier-control">
-                        <span class="auth-country-prefix">UG +256</span>
+                        <span class="auth-country-prefix" id="country-prefix">UG +256</span>
                         {{ form.username }}
                     </div>
                     {% for error in form.username.errors %}<span class="uber-help">{{ error }}</span>{% endfor %}
@@ -73,19 +74,22 @@
     const loginForm = document.getElementById('login-form');
     identifier.placeholder = '07XXXXXXXX';
 
-    function setLoginMode(isEmail) {
-        loginTabs.forEach((item) => item.setAttribute('aria-selected', String((item.dataset.loginMode === 'email') === isEmail)));
-        identifierControl.classList.toggle('is-email', isEmail);
-        identifier.type = isEmail ? 'email' : 'tel';
-        identifier.placeholder = isEmail ? 'name@example.com' : '07XXXXXXXX';
-        identifierLabel.textContent = isEmail ? 'Email Address' : 'Mobile Number';
+    function setLoginMode(mode) {
+        loginTabs.forEach((item) => item.setAttribute('aria-selected', String(item.dataset.loginMode === mode)));
+        const isEmail = mode === 'email';
+        const isUsername = mode === 'username';
+        identifierControl.classList.toggle('is-email', isEmail || isUsername);
+        document.getElementById('country-prefix').hidden = isEmail || isUsername;
+        identifier.type = isEmail ? 'email' : isUsername ? 'text' : 'tel';
+        identifier.placeholder = isEmail ? 'name@example.com' : isUsername ? 'Your username' : '07XXXXXXXX';
+        identifierLabel.textContent = isEmail ? 'Email Address' : isUsername ? 'Username' : 'Mobile Number';
     }
 
     loginTabs.forEach((tab) => tab.addEventListener('click', () => {
-        setLoginMode(tab.dataset.loginMode === 'email');
+        setLoginMode(tab.dataset.loginMode);
     }));
 
-    if (identifier.value.includes('@')) setLoginMode(true);
+    if (identifier.value.includes('@')) setLoginMode('email');
 
     continueButton.addEventListener('click', () => {
         if (!identifier.value.trim()) {

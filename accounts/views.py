@@ -32,6 +32,7 @@ def RegisterView(request):
             user = get_user_model().objects.create_user(
                 phone_number=form.cleaned_data['phone_number'],
                 email=form.cleaned_data['email'],
+                username=form.cleaned_data['username'],
                 password=form.cleaned_data['password'],
                 first_name=form.cleaned_data['first_name'],
                 last_name=form.cleaned_data['last_name'],
@@ -111,7 +112,7 @@ class LoginView(TemplateView):
                 
                 return redirect(self.get_redirect_route_by_role(user))
         
-        messages.error(request, 'Sign-in failed. Check your phone number or email and password, then try again.')
+        messages.error(request, 'Sign-in failed. Check your username, phone number, or email and password, then try again.')
         next_url = request.POST.get('next') or request.GET.get('next', '')
         return render(request, self.template_name, {'form': form, 'next': next_url})
 

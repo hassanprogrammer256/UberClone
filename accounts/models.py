@@ -19,6 +19,17 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
+        username = (extra_fields.get('username') or '').strip().lower()
+        if username:
+            extra_fields['username'] = username
+        else:
+            username = email.split('@')[0].lower()[:150]
+            base_username = username
+            suffix = 1
+            while self.model.objects.filter(username__iexact=username).exists():
+                username = f'{base_username[:145]}{suffix}'
+                suffix += 1
+            extra_fields['username'] = username
         user = self.model(email=email, phone_number=phone_number, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -33,16 +44,21 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        superuser = self.model(email=email, password =None, **extra_fields)
-        superuser.set_password(password)
-        superuser.save(using=self._db)
-
-        return superuser
+        phone_number = extra_fields.pop('phone_number', None)
+        if not phone_number:
+            raise ValueError('Superuser must have a phone number.')
+        return self.create_user(
+            phone_number=phone_number,
+            email=email,
+            password=password,
+            **extra_fields,
+        )
 
 
 class CustomUser(AbstractBaseUser,PermissionsMixin):
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
+    username = models.CharField(max_length=150, unique=True)
     image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     phone_number = models.CharField(max_length=15, unique=True)
     role = models.CharField(max_length=20, choices=USER_ROLES, default='customer')
@@ -58,8 +74,8 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
 
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email', 'phone_number']
 
 
     def __str__(self):

@@ -26,6 +26,14 @@ class RegistrationForm(forms.Form):
 			'required': True,
 		}),
 	)
+	username = forms.CharField(
+		max_length=150,
+		widget=forms.TextInput(attrs={
+			'class': 'uber-field',
+			'autocomplete': 'username',
+			'required': True,
+		}),
+	)
 	email = forms.EmailField(
 		widget=forms.EmailInput(attrs={
 			'class': 'uber-field',
@@ -90,6 +98,12 @@ class RegistrationForm(forms.Form):
 		if get_user_model().objects.filter(email__iexact=email).exists():
 			raise ValidationError('An account with this email address already exists.')
 		return email
+
+	def clean_username(self):
+		username = self.cleaned_data['username'].strip().lower()
+		if get_user_model().objects.filter(username__iexact=username).exists():
+			raise ValidationError('An account with this username already exists.')
+		return username
 
 	def clean_phone_number(self):
 		phone_number = self.cleaned_data['phone_number'].strip()
